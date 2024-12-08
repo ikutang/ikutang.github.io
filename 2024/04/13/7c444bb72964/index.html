@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="baidu-site-verification" content="codeva-OBV0UPgBod" />
+    <meta name="msvalidate.01" content="B9019CE3751A15D63E78AF8679980069" />
+    <meta name="description" content="服务地址https:&#x2F;&#x2F;t.happy365.day 服务部署在本地，由 cloudflare tunnel 提供内网穿透服务。 背景在知乎上看到一篇关于短链生成的设计文档 系统设计之路：如何设计一个URL短链服务，其中涉及到的知识点较多，包括：短链方案设计及取舍、分库分表、高可用设计等。一个看似简单的需求想要真正上线，需要需要实现功能，还要兼顾性能、安全性、可靠性等各个方面。于是想亲自上线一个短">
+<meta property="og:type" content="article">
+<meta property="og:title" content="动手实现一个短链接服务">
+<meta property="og:url" content="https://lozhu.happy365.day/2024/04/13/7c444bb72964/index.html">
+<meta property="og:site_name" content="Lozhu&#39;s blog">
+<meta property="og:description" content="服务地址https:&#x2F;&#x2F;t.happy365.day 服务部署在本地，由 cloudflare tunnel 提供内网穿透服务。 背景在知乎上看到一篇关于短链生成的设计文档 系统设计之路：如何设计一个URL短链服务，其中涉及到的知识点较多，包括：短链方案设计及取舍、分库分表、高可用设计等。一个看似简单的需求想要真正上线，需要需要实现功能，还要兼顾性能、安全性、可靠性等各个方面。于是想亲自上线一个短">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-04-13T03:45:00.000Z">
+<meta property="article:modified_time" content="2024-12-08T06:50:57.175Z">
+<meta property="article:author" content="lozhu">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="SpringBoot">
+<meta property="article:tag" content="Vue.js">
+<meta property="article:tag" content="短链接">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>动手实现一个短链接服务</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XMGS491MQF"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XMGS491MQF');
+  </script>
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Lozhu's blog" type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="modal" class="modal">
+  <span id="modal_close_btn" class="modal-close-btn">x</span>
+  <img id="modal_image" class="modal-image">
+  <!-- <div id="caption"></div> -->
+</div>
+
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2024/04/14/5b6c6f78fbdb/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2024/04/10/69d2730f1338/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2024/04/13/7c444bb72964/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&text=动手实现一个短链接服务"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&title=动手实现一个短链接服务"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&is_video=false&description=动手实现一个短链接服务"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=动手实现一个短链接服务&body=Check out this article: https://lozhu.happy365.day/2024/04/13/7c444bb72964/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&title=动手实现一个短链接服务"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&title=动手实现一个短链接服务"><i class="fab fa-reddit " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&title=动手实现一个短链接服务"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&title=动手实现一个短链接服务"><i class="fab fa-digg " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&name=动手实现一个短链接服务&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&t=动手实现一个短链接服务"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%9C%B0%E5%9D%80"><span class="toc-number">1.</span> <span class="toc-text">服务地址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-number">2.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%B7%E5%80%BC"><span class="toc-number">3.</span> <span class="toc-text">价值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9C%80%E6%B1%82"><span class="toc-number">4.</span> <span class="toc-text">需求</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%9F%E8%83%BD%E6%80%A7%E9%9C%80%E6%B1%82"><span class="toc-number">4.1.</span> <span class="toc-text">功能性需求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E5%8A%9F%E8%83%BD%E6%80%A7%E9%9C%80%E6%B1%82"><span class="toc-number">4.2.</span> <span class="toc-text">非功能性需求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E9%87%8F%E9%A2%84%E6%9C%9F"><span class="toc-number">5.</span> <span class="toc-text">系统数据量预期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9F%AD%E9%93%BE%E7%94%9F%E6%88%90%E6%96%B9%E6%A1%88"><span class="toc-number">6.</span> <span class="toc-text">短链生成方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%A2%9Eid"><span class="toc-number">6.1.</span> <span class="toc-text">自增id</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%99%AE%E9%80%9A%E9%9A%8F%E6%9C%BA%E6%95%B0"><span class="toc-number">6.2.</span> <span class="toc-text">普通随机数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hash"><span class="toc-number">6.3.</span> <span class="toc-text">Hash</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%A1%88"><span class="toc-number">7.</span> <span class="toc-text">数据库设计方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%89%E6%8B%A9"><span class="toc-number">7.1.</span> <span class="toc-text">数据库选择</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%BA%93%E6%96%B9%E6%A1%88"><span class="toc-number">7.2.</span> <span class="toc-text">分库方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E8%A1%A8%E6%96%B9%E6%A1%88"><span class="toc-number">7.3.</span> <span class="toc-text">分表方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A8%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">7.4.</span> <span class="toc-text">表结构设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E8%A1%A8"><span class="toc-number">7.5.</span> <span class="toc-text">创建表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E5%88%86%E5%8C%BA%E8%A1%A8%E5%88%9B%E5%BB%BA%E8%87%AA%E5%8A%A8%E5%8C%96"><span class="toc-number">7.6.</span> <span class="toc-text">实现分区表创建自动化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B"><span class="toc-number">8.</span> <span class="toc-text">技术选型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">8.1.</span> <span class="toc-text">数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E7%AB%AF"><span class="toc-number">8.2.</span> <span class="toc-text">后端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%AB%AF"><span class="toc-number">8.3.</span> <span class="toc-text">前端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8"><span class="toc-number">8.4.</span> <span class="toc-text">容器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-Docker-%E9%83%A8%E7%BD%B2%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">9.</span> <span class="toc-text">使用 Docker 部署数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker-%E9%83%A8%E7%BD%B2-Postgresql"><span class="toc-number">10.</span> <span class="toc-text">Docker 部署 Postgresql</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98"><span class="toc-number">11.</span> <span class="toc-text">缓存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E7%AB%AF%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1"><span class="toc-number">12.</span> <span class="toc-text">后端接口设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%AD%E9%93%BE%E7%94%9F%E6%88%90%E6%8E%A5%E5%8F%A3"><span class="toc-number">12.1.</span> <span class="toc-text">短链生成接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%AD%E9%93%BE%E7%BB%9F%E8%AE%A1%E6%95%B0%E6%8D%AE%E6%8E%A5%E5%8F%A3"><span class="toc-number">12.2.</span> <span class="toc-text">短链统计数据接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%AD%E9%93%BE%E8%AE%BF%E9%97%AE%E6%8E%A5%E5%8F%A3"><span class="toc-number">12.3.</span> <span class="toc-text">短链访问接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">13.</span> <span class="toc-text">高可用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">13.1.</span> <span class="toc-text">数据库高可用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">13.2.</span> <span class="toc-text">后端服务高可用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nginx-%E9%85%8D%E7%BD%AE"><span class="toc-number">14.</span> <span class="toc-text">nginx 配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%95%9C%E5%83%8F%E6%8B%89%E5%8F%96"><span class="toc-number">14.1.</span> <span class="toc-text">镜像拉取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">14.2.</span> <span class="toc-text">准备配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%AE%B9%E5%99%A8"><span class="toc-number">14.3.</span> <span class="toc-text">启动容器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%AB%AF%E9%A1%B9%E7%9B%AE"><span class="toc-number">15.</span> <span class="toc-text">前端项目</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Vue-%E9%A1%B9%E7%9B%AE%E6%90%AD%E5%BB%BA"><span class="toc-number">15.1.</span> <span class="toc-text">Vue 项目搭建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Axios-%E9%85%8D%E7%BD%AE"><span class="toc-number">15.2.</span> <span class="toc-text">Axios 配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E9%9D%A2%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">15.3.</span> <span class="toc-text">页面代码实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%8C%85%E9%83%A8%E7%BD%B2%E8%87%B3-nginx"><span class="toc-number">15.4.</span> <span class="toc-text">打包部署至 nginx</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker-%E9%95%9C%E5%83%8F%E7%94%9F%E6%88%90"><span class="toc-number">15.5.</span> <span class="toc-text">Docker 镜像生成</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Springboot-MyBatis-%E5%A4%9A%E6%95%B0%E6%8D%AE%E6%BA%90%E9%85%8D%E7%BD%AE"><span class="toc-number">16.</span> <span class="toc-text">Springboot + MyBatis 多数据源配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker-%E9%83%A8%E7%BD%B2%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1"><span class="toc-number">17.</span> <span class="toc-text">Docker 部署后端服务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#jar-%E5%8C%85%E7%94%9F%E6%88%90"><span class="toc-number">17.1.</span> <span class="toc-text">jar 包生成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Dockerfile-%E7%BC%96%E5%86%99"><span class="toc-number">17.2.</span> <span class="toc-text">Dockerfile 编写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%8C%85"><span class="toc-number">17.3.</span> <span class="toc-text">打包</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nginx-%E8%BD%AC%E5%8F%91%E9%85%8D%E7%BD%AE"><span class="toc-number">18.</span> <span class="toc-text">nginx 转发配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95"><span class="toc-number">19.</span> <span class="toc-text">问题记录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95"><span class="toc-number">20.</span> <span class="toc-text">其他问题记录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#hashcode-%E5%8F%AF%E8%83%BD%E4%B8%BA%E8%B4%9F%E6%95%B0"><span class="toc-number">20.1.</span> <span class="toc-text">hashcode 可能为负数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Async-%E5%A4%B1%E6%95%88%E9%97%AE%E9%A2%98"><span class="toc-number">20.2.</span> <span class="toc-text">@Async 失效问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Value-%E5%8F%96%E5%88%B0%E9%94%99%E8%AF%AF%E7%9A%84%E9%85%8D%E7%BD%AE%E5%80%BC"><span class="toc-number">20.3.</span> <span class="toc-text">@Value 取到错误的配置值</span></a></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        动手实现一个短链接服务
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">lozhu</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-04-13T03:45:00.000Z" class="dt-published" itemprop="datePublished">2024-04-13</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E9%A1%B9%E7%9B%AE%E6%97%A5%E5%BF%97/">项目日志</a>
+    </div>
+
+
+      
+    <!-- <div class="article-tag"> -->
+    <div class="article-category">
+        <i class="fa-solid fa-tag"></i>
+        <!-- <a class="p-category" href="/tags/Docker/" rel="tag">Docker</a>, <a class="p-category" href="/tags/SpringBoot/" rel="tag">SpringBoot</a>, <a class="p-category" href="/tags/Vue-js/" rel="tag">Vue.js</a>, <a class="p-category" href="/tags/%E7%9F%AD%E9%93%BE%E6%8E%A5/" rel="tag">短链接</a> -->
+        <a class="category-link" href="/tags/Docker/" rel="tag">Docker</a>, <a class="category-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a>, <a class="category-link" href="/tags/Vue-js/" rel="tag">Vue.js</a>, <a class="category-link" href="/tags/%E7%9F%AD%E9%93%BE%E6%8E%A5/" rel="tag">短链接</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="服务地址"><a href="#服务地址" class="headerlink" title="服务地址"></a>服务地址</h2><p><a target="_blank" rel="noopener" href="https://t.happy365.day/">https://t.happy365.day</a></p>
+<p>服务部署在本地，由 cloudflare tunnel 提供内网穿透服务。</p>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>在知乎上看到一篇关于短链生成的设计文档 <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/370475544">系统设计之路：如何设计一个URL短链服务</a>，其中涉及到的知识点较多，包括：短链方案设计及取舍、分库分表、高可用设计等。一个看似简单的需求想要真正上线，需要需要实现功能，还要兼顾性能、安全性、可靠性等各个方面。于是想亲自上线一个短链生成服务，锻炼一下动手能力。</p>
+<h2 id="价值"><a href="#价值" class="headerlink" title="价值"></a>价值</h2><p>短链服务在微博类网站中较为流行，使用短链服务好处包括：</p>
+<ol>
+<li>精简目标网址，缩短文本长度，便于记忆和传播；</li>
+<li>隐藏目标地址及参数；</li>
+<li>控制目标网址的跳转，不安全网址可以限制跳转。</li>
+</ol>
+<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><h3 id="功能性需求"><a href="#功能性需求" class="headerlink" title="功能性需求"></a>功能性需求</h3><ol>
+<li>实现长链接转换短链接，长度缩短且唯一；</li>
+<li>生成之后的短链接能正确跳转至原地址；</li>
+<li>短链接可以设置失效时长，默认5年；</li>
+</ol>
+<h3 id="非功能性需求"><a href="#非功能性需求" class="headerlink" title="非功能性需求"></a>非功能性需求</h3><ol>
+<li>性能：短链接跳转时长与原链接跳转时长无明显差异；</li>
+<li>安全：短链接不能被遍历；</li>
+<li>可用：不能存在单点故障。</li>
+</ol>
+<h2 id="系统数据量预期"><a href="#系统数据量预期" class="headerlink" title="系统数据量预期"></a>系统数据量预期</h2><p>写请求数：10个&#x2F;s</p>
+<p>读请求数：100个&#x2F;s</p>
+<p>5年内产生短链数量：10 * 60 * 60 * 24 * 365 * 5 &#x3D; 1,576,800,000 （约16亿）</p>
+<p>62 ^ n &gt;&#x3D; 16亿 &#x3D;&gt; n &gt;&#x3D; 6</p>
+<p>短码长度设置为6位中英文大小写字母和数字可满足需求。</p>
+<h2 id="短链生成方案"><a href="#短链生成方案" class="headerlink" title="短链生成方案"></a>短链生成方案</h2><h3 id="自增id"><a href="#自增id" class="headerlink" title="自增id"></a>自增id</h3><p>每次请求生成一个递增唯一的id，根据生成的id转换到62进制得到一个唯一的短链接。但是此种方式生成的短链接是有规律的，如果接口被恶意调用，可能会导致短链接被迅速消耗完，并且浪费掉大部分性能，正常的请求得不到处理。</p>
+<h3 id="普通随机数"><a href="#普通随机数" class="headerlink" title="普通随机数"></a>普通随机数</h3><p>每次请求随机生成一个随机数，再根据这个随机数进行转换到62进制得到短链接，如果该短链接已被占用，则重新生成随机数。实现起来很简单，但缺点也很明显：1.随着生成的短链接数量的增加，碰撞的概率越来越大；2.伪随机数可以被攻击者预测。</p>
+<h3 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h3><p>使用 MurmurHash3 （对比 md5 随机分布性更好，发生 Hash 碰撞的几率更低，可以提高性能），对原始链接进行哈希，得到哈希值，转换成 62 进制得到短链接。如果存在碰撞，则在原始链接后增加特定后缀再进行 Hash。</p>
+<p>⚠️ 要特别注意，hashcode 可能为负数！</p>
+<h2 id="数据库设计方案"><a href="#数据库设计方案" class="headerlink" title="数据库设计方案"></a>数据库设计方案</h2><h3 id="数据库选择"><a href="#数据库选择" class="headerlink" title="数据库选择"></a>数据库选择</h3><p>选择 Postgresql 做为系统数据库。</p>
+<h3 id="分库方案"><a href="#分库方案" class="headerlink" title="分库方案"></a>分库方案</h3><p>单条记录占用内存大小：</p>
+<p> (36 + 512 + 6 + 8 + 4 + 4 + 8 + 100 + 8 + 100) byte &#x3D; 786 byte</p>
+<p>5年内所有记录占用内存大小：</p>
+<p>16 亿 * 786 byte &#x2F; 1024KB &#x2F; 1024MB &#x2F; 1024 GB &#x3D; 1.13 TB</p>
+<p>分 3 个库，主库写，从库读，主从复制。</p>
+<h3 id="分表方案"><a href="#分表方案" class="headerlink" title="分表方案"></a>分表方案</h3><p>单表记录不超过 500 万行，16 亿 &#x2F; 500 万 &#x3D;  320 张表，此时单表容量为 1130 GB &#x2F; 320 &#x3D; 3.5 GB。平均到 5 年共 60 个月，大约 5.5 天需要新增一张表，为了简表方便，按 5 天新增一张表实现。</p>
+<h3 id="表结构设计"><a href="#表结构设计" class="headerlink" title="表结构设计"></a>表结构设计</h3><p>URL映射表（t_url_mapping）：</p>
+<table>
+<thead>
+<tr>
+<th>字段名</th>
+<th>类型</th>
+<th>默认值</th>
+<th>是否可空</th>
+<th>是否主键</th>
+<th>字段含义</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>varchar(36)</td>
+<td>uuid</td>
+<td></td>
+<td>Y</td>
+<td>主键id</td>
+<td></td>
+</tr>
+<tr>
+<td>url</td>
+<td>varchar(512)</td>
+<td></td>
+<td></td>
+<td></td>
+<td>原始URL</td>
+<td></td>
+</tr>
+<tr>
+<td>short_url</td>
+<td>varchar(6)</td>
+<td></td>
+<td></td>
+<td></td>
+<td>短链接</td>
+<td>唯一索引</td>
+</tr>
+<tr>
+<td>expire_time</td>
+<td>timestamp</td>
+<td></td>
+<td>Y</td>
+<td></td>
+<td>失效时间</td>
+<td></td>
+</tr>
+<tr>
+<td>status</td>
+<td>int</td>
+<td>0</td>
+<td></td>
+<td></td>
+<td>状态(0:正常,1:失效)</td>
+<td></td>
+</tr>
+<tr>
+<td>visit_count</td>
+<td>int</td>
+<td>0</td>
+<td></td>
+<td></td>
+<td>短链接访问次数</td>
+<td></td>
+</tr>
+<tr>
+<td>create_time</td>
+<td>timestamp</td>
+<td>current_timestamp</td>
+<td></td>
+<td></td>
+<td>创建时间</td>
+<td></td>
+</tr>
+<tr>
+<td>create_by</td>
+<td>varchar(100)</td>
+<td>unknow</td>
+<td></td>
+<td></td>
+<td>创建人</td>
+<td></td>
+</tr>
+<tr>
+<td>update_time</td>
+<td>timestamp</td>
+<td>current_timestamp</td>
+<td></td>
+<td></td>
+<td>更新时间</td>
+<td></td>
+</tr>
+<tr>
+<td>update_by</td>
+<td>varchar(100)</td>
+<td>unknow</td>
+<td></td>
+<td></td>
+<td>更新人</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="创建表"><a href="#创建表" class="headerlink" title="创建表"></a>创建表</h3><p>父表建表 SQL 如下：</p>
+<pre><code class="sql">drop table if exists public.t_url_mapping;
+
+create table public.t_url_mapping
+(
+    id          varchar(36) default gen_random_uuid() not null,
+    url         varchar(512)                          not null,
+    short_url   varchar(6),
+    expire_time timestamp,
+    status      int         default 0,
+    visit_count int         default 0,
+    create_time timestamp   default current_timestamp,
+    create_by   varchar(100),
+    update_time timestamp   default current_timestamp,
+    update_by   varchar(100),
+    primary key (id, create_time)
+) partition by range (create_time);
+
+comment on table public.t_url_mapping is &#39;短链接映射表&#39;;
+comment on column public.t_url_mapping.id is &#39;主键&#39;;
+comment on column public.t_url_mapping.url is &#39;原始链接&#39;;
+comment on column public.t_url_mapping.short_url is &#39;短链接&#39;;
+comment on column public.t_url_mapping.expire_time is &#39;过期时间&#39;;
+comment on column public.t_url_mapping.status is &#39;状态(0:正常,1:失效)&#39;;
+comment on column public.t_url_mapping.visit_count is &#39;访问次数&#39;;
+comment on column public.t_url_mapping.create_time is &#39;创建时间&#39;;
+comment on column public.t_url_mapping.create_by is &#39;创建人&#39;;
+comment on column public.t_url_mapping.update_time is &#39;更新时间&#39;;
+comment on column public.t_url_mapping.update_by is &#39;更新人&#39;;
+</code></pre>
+<p>创建分区表并在时间字段上加索引：</p>
+<pre><code class="sql">drop table if exists public.t_url_mapping_20240413_to_20240417;
+drop index if exists idx_t_url_mapping_create_time;
+drop index if exists uk_t_url_mapping_short_url;
+
+-- 创建分表
+create table if not exists public.t_url_mapping_20240413_to_20240417
+    partition of public.t_url_mapping
+        for values from (&#39;2024-04-13&#39;) to (&#39;2024-04-17&#39;);
+-- 创建分表分区字段索引
+create index idx_t_url_mapping_create_time on public.t_url_mapping_20240413_to_20240417 (create_time);
+-- 创建唯一索引
+create unique index if not exists uk_t_url_mapping_short_url on public.t_url_mapping_20240413_to_20240417 (short_url);
+</code></pre>
+<p>pg10 已经对分区表的支持已经很好了，网上一些资料中使用继承的方式创建分区表已经很过时了。</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/110927990">实战 PostgreSQL 分区表</a></p>
+<h3 id="实现分区表创建自动化"><a href="#实现分区表创建自动化" class="headerlink" title="实现分区表创建自动化"></a>实现分区表创建自动化</h3><p>需要使用触发器，在执行插入操作时如果发现分区表不存在，则先创建对应的分区表。</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/shijiehaiyang/p/17406142.html">postgresql 自动创建分区表</a></p>
+<h2 id="技术选型"><a href="#技术选型" class="headerlink" title="技术选型"></a>技术选型</h2><h3 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h3><ul>
+<li>Postgresql 16</li>
+<li>Redis 7.2</li>
+</ul>
+<h3 id="后端"><a href="#后端" class="headerlink" title="后端"></a>后端</h3><ul>
+<li>JDK17</li>
+<li>Springboot 3.1.x</li>
+</ul>
+<h3 id="前端"><a href="#前端" class="headerlink" title="前端"></a>前端</h3><ul>
+<li>Nginx 1.24.0</li>
+<li>Vue3</li>
+<li>Bootstrap5</li>
+<li>Webpack</li>
+</ul>
+<h3 id="容器"><a href="#容器" class="headerlink" title="容器"></a>容器</h3><ul>
+<li>Docker</li>
+</ul>
+<h2 id="使用-Docker-部署数据库"><a href="#使用-Docker-部署数据库" class="headerlink" title="使用 Docker 部署数据库"></a>使用 Docker 部署数据库</h2><p>创建 3 个持久化数据卷，shorturl00 为主库，其他两个为从库。</p>
+<pre><code class="sh">docker create volume shorturl00
+docker create volume shorturl01
+docker create volume shorturl02
+</code></pre>
+<p>创建网络</p>
+<pre><code class="sh">docker network create --subnet 172.12.0.0/16 --gateway 172.12.0.1 postgresqlnet
+</code></pre>
+<p>拉取镜像</p>
+<pre><code class="sh">docker pull postgres
+</code></pre>
+<p>运行容器</p>
+<pre><code class="sh">docker run -id --name=shorturl00 --network postgresqlnet --network-alias shorturl00 --ip 172.12.0.2 -v shorturl00:/var/lib/postgresql/data -p 5440:5440 -e POSTGRES_PASSWORD=12345678 -e LANG=C.UTF-8 postgres
+
+docker run -id --name=shorturl01 --network postgresqlnet --network-alias shorturl01 --ip 172.12.0.3 -v shorturl01:/var/lib/postgresql/data -p 5441:5441 -e POSTGRES_PASSWORD=12345678 -e LANG=C.UTF-8 postgres
+
+docker run -id --name=shorturl02 --network postgresqlnet --network-alias shorturl02 --ip 172.12.0.4 -v shorturl02:/var/lib/postgresql/data -p 5442:5442 -e POSTGRES_PASSWORD=12345678 -e LANG=C.UTF-8 postgres
+</code></pre>
+<p>进入容器 &#x2F;var&#x2F;lib&#x2F;postgresql&#x2F;data 目录修改 pg_hba.conf 端口</p>
+<pre><code>port=5440
+</code></pre>
+<p>修改 pg_hba.conf 允许外部连接</p>
+<pre><code># IPv4 local connections:
+host    all             all             0.0.0.0/0               trust
+</code></pre>
+<p>在容器内创建数据库 shorturl，外部连接测试。</p>
+<p>注：在容器内编辑配置文件需要用到 vim，替换一下软件源速度会更快。</p>
+<pre><code class="sh">cd /etc/apt
+mv sources.list.d sources.list.d.bak
+# 使用中科大的源，并且不要用 https，不然会报证书错误
+echo &#39;
+deb http://mirrors.ustc.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb-src http://mirrors.ustc.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb http://mirrors.ustc.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb-src http://mirrors.ustc.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb http://mirrors.ustc.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
+deb-src http://mirrors.ustc.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
+deb http://mirrors.ustc.edu.cn/debian-security/ bookworm-security main contrib non-free non-free-firmware
+deb-src http://mirrors.ustc.edu.cn/debian-security/ bookworm-security main contrib non-free non-free-firmware
+&#39; &gt; sources.list
+apt-get update
+</code></pre>
+<h2 id="Docker-部署-Postgresql"><a href="#Docker-部署-Postgresql" class="headerlink" title="Docker 部署 Postgresql"></a>Docker 部署 Postgresql</h2><h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>使用缓存提高性能。生成新的短链接写入数据库的同时写入缓存中，访问短链接时首先从缓存中获取，缓存中获取不到再从数据库中获取，获取成功后将其放入缓存中。</p>
+<p>使用 Redis 做为缓存中间件，缓存大小设置为 1G</p>
+<p>1G &#x2F; 782 byte &#x3D; 137 万</p>
+<p>137 万 &#x2F; 10条 &#x2F; s</p>
+<p>缓存过期时间设置为 1 天。</p>
+<h2 id="后端接口设计"><a href="#后端接口设计" class="headerlink" title="后端接口设计"></a>后端接口设计</h2><h3 id="短链生成接口"><a href="#短链生成接口" class="headerlink" title="短链生成接口"></a>短链生成接口</h3><p>接口名：api&#x2F;v1&#x2F;shortenURL</p>
+<p>请求方式：GET</p>
+<p>参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>sign</td>
+<td>请求签名（对参数进行编码）</td>
+</tr>
+<tr>
+<td>URL</td>
+<td>原始URL</td>
+</tr>
+</tbody></table>
+<p>返回值：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>code</td>
+<td>0:处理成功,-1:处理失败</td>
+</tr>
+<tr>
+<td>message</td>
+<td>处理结果</td>
+</tr>
+<tr>
+<td>data: shortURL</td>
+<td>短链接</td>
+</tr>
+</tbody></table>
+<h3 id="短链统计数据接口"><a href="#短链统计数据接口" class="headerlink" title="短链统计数据接口"></a>短链统计数据接口</h3><p>接口名：api&#x2F;v1&#x2F;statistics</p>
+<p>请求方式：GET</p>
+<p>参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数名</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>sign</td>
+<td>请求签名</td>
+</tr>
+</tbody></table>
+<p>返回值：</p>
+<table>
+<thead>
+<tr>
+<th>参数名</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>code</td>
+<td>返回 0 时成功，否则失败</td>
+</tr>
+<tr>
+<td>message</td>
+<td>处理结果</td>
+</tr>
+<tr>
+<td>data:</td>
+<td></td>
+</tr>
+<tr>
+<td>totalCount</td>
+<td>共生成短链条数</td>
+</tr>
+</tbody></table>
+<h3 id="短链访问接口"><a href="#短链访问接口" class="headerlink" title="短链访问接口"></a>短链访问接口</h3><p>接口名：api&#x2F;v1&#x2F;visitShortURL</p>
+<p>请求方式：GET</p>
+<p>参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>shortURL</td>
+<td>短链接</td>
+</tr>
+</tbody></table>
+<p>返回值：</p>
+<table>
+<thead>
+<tr>
+<th>参数名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>code</td>
+<td>301:跳转,-1:处理失败</td>
+</tr>
+<tr>
+<td>message</td>
+<td>处理结果</td>
+</tr>
+<tr>
+<td>data:</td>
+<td></td>
+</tr>
+<tr>
+<td>URL</td>
+<td>原始URL</td>
+</tr>
+</tbody></table>
+<h2 id="高可用"><a href="#高可用" class="headerlink" title="高可用"></a>高可用</h2><h3 id="数据库高可用"><a href="#数据库高可用" class="headerlink" title="数据库高可用"></a>数据库高可用</h3><p>一主两从，主从复制，主库写，从库读。</p>
+<h3 id="后端服务高可用"><a href="#后端服务高可用" class="headerlink" title="后端服务高可用"></a>后端服务高可用</h3><p>后端服务分布式部署，Nginx做负载均衡。</p>
+<h2 id="nginx-配置"><a href="#nginx-配置" class="headerlink" title="nginx 配置"></a>nginx 配置</h2><p>前端通过 nginx 将前端请求转发至后端，后端同时运行多个实例，通过 nginx 实现负载均衡。</p>
+<p>docker 部署 nginx 参考文档：<a target="_blank" rel="noopener" href="https://blog.csdn.net/BThinker/article/details/123507820">Docker 安装 Nginx 容器 (完整详细版)</a> </p>
+<h3 id="镜像拉取"><a href="#镜像拉取" class="headerlink" title="镜像拉取"></a>镜像拉取</h3><pre><code class="sh">docker pull nginx:latest
+</code></pre>
+<h3 id="准备配置文件"><a href="#准备配置文件" class="headerlink" title="准备配置文件"></a>准备配置文件</h3><p>nginx 配置文件放在宿主机管理，启动容器，nginx 会生成默认配置文件，将容器中的配置文件拷贝到宿主机自定义目录中。</p>
+<pre><code class="sh">docker run -dp 80:80 --name nginx nginx
+</code></pre>
+<p>建立本地 nginx 配置文件夹：</p>
+<pre><code class="sh">mkdir /home/lozhu/Documents/nginx_config/conf
+
+mkdir /home/lozhu/Documents/nginx_config/html
+
+mkdir /home/lozhu/Documents/nginx_config/log
+</code></pre>
+<p>拷贝配置文件至宿主机：</p>
+<pre><code class="sh">docker cp nginx:/etc/nginx/nginx.conf /home/lozhu/Documents/nginx_config/conf
+
+docker cp nginx:/etc/nginx/html /home/lozhu/Documents/nginx_config/html
+
+docker cp nginx:/etc/nginx/conf.d /home/lozhu/Documents/nginx_config/conf
+</code></pre>
+<h3 id="启动容器"><a href="#启动容器" class="headerlink" title="启动容器"></a>启动容器</h3><p>先删除之前启动的容器：</p>
+<pre><code class="sh">docker stop nginx
+
+docker rm nginx
+</code></pre>
+<p>为了后面 nginx 能将请求转发至后端接口，将 nginx 和数据库容器、后端服务容器放在同一个网络中。</p>
+<pre><code class="sh">docker run -dp 80:80 \
+--name nginx \
+--network postgresqlnet \
+--ip 172.12.0.10 \
+-v /home/lozhu/Documents/nginx_config/conf/nginx.conf:/etc/nginx/nginx.conf \
+-v /home/lozhu/Documents/nginx_config/conf/conf.d:/etc/nginx/conf.d \
+-v /home/lozhu/Documents/nginx_config/html:/usr/share/nginx/html \
+nginx:latest
+</code></pre>
+<p>小插曲：容器启动时路径 &#x2F;home&#x2F;lozhu&#x2F;Documents&#x2F;nginx_config&#x2F;conf&#x2F;conf.d 错写为 &#x2F;home&#x2F;lozhu&#x2F;Documents&#x2F;nginx_config&#x2F;conf.d，少了一层 conf，容器启动后无法访问：</p>
+<pre><code>$ curl http://localhost
+curl: (56) Recv failure: Connection reset by peer
+</code></pre>
+<p>路径修正后再启动就可以正常访问了。</p>
+<h2 id="前端项目"><a href="#前端项目" class="headerlink" title="前端项目"></a>前端项目</h2><p>本来想趁此机会学习一下 React 和 Next.js ，但是发现 Next.js 相关的入门中文资料太少，中文网站上翻译都不全。一个点击按钮调用后端接口获取数据的例子都很难找到，还是到了 stackoverflow 上才看到有人贴了英文官网的文档。国内各种博客文章上来就是服务端渲染、客户端渲染，难道 Next.js 做不了交互吗？留到后面再深入学习吧。此次需求先使用熟悉的 Vue.js 来实现。</p>
+<h3 id="Vue-项目搭建"><a href="#Vue-项目搭建" class="headerlink" title="Vue 项目搭建"></a>Vue 项目搭建</h3><p>创建项目：</p>
+<pre><code class="sh">vue init webpack shorturl-web
+</code></pre>
+<h3 id="Axios-配置"><a href="#Axios-配置" class="headerlink" title="Axios 配置"></a>Axios 配置</h3><p>使用的 Vue.js 版本是 2.5.2，如果安装 axios 最新版本的话项目启动会报错：</p>
+<pre><code>in ../node_modules/axios/lib/platform/index.js
+</code></pre>
+<p>解决方法是将低 axios 版本，先删除 node_modules 目录，然后将 package.json 中 axios 版本改为 1.5.0，再重新 npm install。</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/AGLQYP/article/details/136199938">Vue引入axios报错</a></p>
+<p>先修改 config&#x2F;index.js 中的跨域设置：</p>
+<pre><code class="js">module.exports = &#123;
+  dev: &#123;
+
+    // Paths
+    assetsSubDirectory: &#39;static&#39;,
+    assetsPublicPath: &#39;/&#39;,
+    proxyTable: &#123;
+      &#39;^/api&#39;: &#123;
+        target: &#39;http://localhost:8000&#39;,
+        changeOrigin: true,
+        secure: false,
+        pathRewrite: &#123;
+          &#39;^/api&#39;: &#39;/api&#39;
+        &#125;
+      &#125;
+    &#125;,
+    ...
+  &#125;
+</code></pre>
+<p>在 main.js 中引入 axios</p>
+<pre><code class="js">import axios from &#39;axios&#39;
+
+Vue.prototype.$axios = axios
+</code></pre>
+<h3 id="页面代码实现"><a href="#页面代码实现" class="headerlink" title="页面代码实现"></a>页面代码实现</h3><p>主要代码：</p>
+<pre><code class="vue">&lt;template&gt;
+  &lt;div class=&quot;content&quot;&gt;
+    &lt;div class=&quot;main-content&quot;&gt;
+      &lt;h2&gt;Lozhu 的在线短链服务&lt;/h2&gt;
+      &lt;h4&gt;累计生成短链: &#123;&#123; historyData.length &#125;&#125;&lt;/h4&gt;
+      &lt;div class=&quot;input-group mb-3&quot; style=&quot;margin-top: 40px;&quot;&gt;
+        &lt;input v-model=&quot;URL&quot; type=&quot;text&quot; class=&quot;form-control&quot; placeholder=&quot;请输入链接，一次一个哦～&quot;&gt;
+        &lt;button v-on:click=&quot;shortenURL&quot; class=&quot;btn btn-outline-secondary&quot; type=&quot;button&quot; id=&quot;button-addon2&quot;&gt;🚀
+          生成短链&lt;/button&gt;
+      &lt;/div&gt;
+      &lt;div v-if=&quot;errorMessage&quot; class=&quot;alert alert-danger fade show&quot; role=&quot;alert&quot;&gt;
+        &#123;&#123; errorMessage &#125;&#125;
+      &lt;/div&gt;
+      &lt;div v-if=&quot;warningMessage&quot; class=&quot;alert alert-warning fade show&quot; role=&quot;alert&quot;&gt;
+        &#123;&#123; warningMessage &#125;&#125;
+      &lt;/div&gt;
+      &lt;div style=&quot;margin-top: 50px;&quot;&gt;
+        &lt;table class=&quot;table table-hover&quot;&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th&gt;序号&lt;/th&gt;
+              &lt;th&gt;原始链接&lt;/th&gt;
+              &lt;th&gt;短链&lt;/th&gt;
+              &lt;th&gt;生成时间&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;tr v-for=&quot;(item, index) in historyData&quot; :key=&quot;index&quot;&gt;
+              &lt;td&gt;&#123;&#123; index + 1 &#125;&#125;&lt;/td&gt;
+              &lt;td&gt;
+                &lt;a :href=item.URL target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;&#123;&#123; item.URL &#125;&#125;&lt;/a&gt;
+              &lt;/td&gt;
+              &lt;td&gt;
+                &lt;a :href=item.shortURL target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;&#123;&#123; item.shortURL &#125;&#125;&lt;/a&gt;
+              &lt;/td&gt;
+              &lt;td&gt;&#123;&#123; item.generateTime &#125;&#125;&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;footer&quot;&gt;
+      &lt;p&gt;
+        &lt;span&gt;
+          📝 &lt;a :href=&quot;documentURL&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt; 项目文档&lt;/a&gt;
+        &lt;/span&gt;
+        |
+        &lt;span&gt;
+          &lt;a :href=&quot;sourceCodeURL&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;&gt;源码&lt;/a&gt;
+        &lt;/span&gt;
+      &lt;/p&gt;
+      &lt;p&gt;
+        &lt;span&gt;
+          &lt;div class=&quot;heart&quot;&gt;&lt;/div&gt;
+        &lt;/span&gt;
+        &lt;span&gt;已勉强运行 &#123;&#123; runningDays &#125;&#125; 天&lt;/span&gt;
+      &lt;/p&gt;
+      &lt;p&gt;©️ 2024 lozhu 保留所有权利&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+export default &#123;
+  name: &#39;Home&#39;,
+  data() &#123;
+    return &#123;
+      URL: &#39;&#39;,
+      shortURL: &#39;&#39;,
+      errorMessage: &#39;&#39;,
+      warningMessage: &#39;&#39;,
+      totalCount: 0,
+      runningDays: 0,
+      historyData: [],
+      documentURL: &#39;https://lozhu.happy365.day&#39;,
+      sourceCodeURL: &#39;https://lozhu.happy365.day&#39;
+    &#125;
+  &#125;,
+  created() &#123;
+    let nowTime = new Date().getTime() / 1000
+    // 开始运行时间: 2024-04-12
+    let startTime = new Date(2024, 3, 12).getTime() / 1000
+    let days = (nowTime - startTime) / (60 * 60 * 24)
+    this.runningDays = parseInt(days + &#39;&#39;)
+  &#125;,
+  methods: &#123;
+    shortenURL() &#123;
+      this.warningMessage = &#39;&#39;
+      this.errorMessage = &#39;&#39;
+      if (this.URL === &#39;&#39;) &#123;
+        this.warningMessage = &#39;请先输入链接哦～&#39;
+        return false
+      &#125;
+      this.$axios.get(&#39;/api/v1/shortenURL&#39;, &#123;
+        params: &#123;
+          URL: this.URL,
+          sign: &#39;&#39;
+        &#125;
+      &#125;).then((res) =&gt; &#123;
+        if (res.data &amp;&amp; res.data.code === 0) &#123;
+          let tableRow = &#123;
+            URL: this.URL,
+            shortURL: res.data.data,
+            generateTime: this.formatDateTime(new Date())
+          &#125;
+          this.historyData.push(tableRow)
+        &#125; else &#123;
+          this.errorMessage = res.data.message
+        &#125;
+        this.URL = &#39;&#39;
+      &#125;).catch((err) =&gt; &#123;
+        this.errorMessage = &#39;当前服务不可用&#39;
+        this.warningMessage = &#39;&#39;
+      &#125;)
+    &#125;,
+    formatDateTime(date) &#123;
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const hour = date.getHours();
+      const minute = date.getMinutes();
+      const second = date.getSeconds();
+      return `$&#123;year&#125;-$&#123;this.pad(month)&#125;-$&#123;this.pad(day)&#125; $&#123;this.pad(hour)&#125;:$&#123;this.pad(minute)&#125;:$&#123;this.pad(second)&#125;`;
+    &#125;,
+    pad(num) &#123;
+      return num.toString().padStart(2, &#39;0&#39;);
+    &#125;
+  &#125;
+&#125;
+&lt;/script&gt;
+
+&lt;style scoped&gt;
+&lt;/style&gt;
+</code></pre>
+<p>样式直接引入 Bootstrap 实现。CSS 代码省略。</p>
+<h3 id="打包部署至-nginx"><a href="#打包部署至-nginx" class="headerlink" title="打包部署至 nginx"></a>打包部署至 nginx</h3><p>打包：</p>
+<pre><code class="sh">npm run build
+</code></pre>
+<p>打包完成之后，将 dist 路径下的 index.html 和 static 两个文件拷贝至 docker nginx 映射的宿主机 html 目录下，访问宿主机 80 端口，即可看到页面。</p>
+<h3 id="Docker-镜像生成"><a href="#Docker-镜像生成" class="headerlink" title="Docker 镜像生成"></a>Docker 镜像生成</h3><pre><code class="dockerfile">FROM nginx:1.22
+
+EXPOSE 80
+
+COPY /dist /usr/share/nginx/html
+
+ENTRYPOINT nginx -g &quot;daemon off;&quot;
+</code></pre>
+<p>可能是我自己电脑性能比较低的原因，打包比较慢，要好几分钟才能跑完。</p>
+<pre><code class="sh">docker build -t chenxii81/shorturl-web-image:v1.1.0 .
+</code></pre>
+<p>打包完成后推送至 Docker Hub：</p>
+<pre><code class="sh">docker push chenxii81/shorturl-web-image:v1.1.0
+</code></pre>
+<p>运行容器：</p>
+<pre><code class="sh">docker run -dp 3000:80 --name shorturl-web --network postgresqlnet --ip 172.12.0.10 chenxii81/shorturl-web-image:v1.1.0
+</code></pre>
+<p>访问 <a target="_blank" rel="noopener" href="http://localhost:3000/">http://localhost:3000</a> 可以看到首页。</p>
+<p>nginx 转发配置参考下文。</p>
+<h2 id="Springboot-MyBatis-多数据源配置"><a href="#Springboot-MyBatis-多数据源配置" class="headerlink" title="Springboot + MyBatis 多数据源配置"></a>Springboot + MyBatis 多数据源配置</h2><p>首先引入数据库配置相关依赖：</p>
+<pre><code class="xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-jdbc&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.mybatis&lt;/groupId&gt;
+    &lt;artifactId&gt;mybatis&lt;/artifactId&gt;
+    &lt;version&gt;3.5.11&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.postgresql&lt;/groupId&gt;
+    &lt;artifactId&gt;postgresql&lt;/artifactId&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;!-- 使用 aop + 注解 的方式动态切换数据源 --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-aspects&lt;/artifactId&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>实体类定义：</p>
+<pre><code class="java">@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UrlMapping &#123;
+
+    private String id;
+
+    private String url;
+
+    private String shortUrl;
+
+    private Date expireTime;
+
+    private int status = 0;
+
+    private Date createTime = new Date();
+
+    private String createBy = &quot;system&quot;;
+
+    private Date updateTime = new Date();
+
+    private String updateBy = &quot;system&quot;;
+
+&#125;
+</code></pre>
+<p>数据库访问接口：</p>
+<pre><code class="java">@Mapper
+public interface UrlMappingDao &#123;
+
+    int insert(UrlMapping urlMapping);
+
+    UrlMapping selectByShortUrl(String shortURL);
+
+    /**
+     * 更新过期链接的有效性
+     *
+     * @return 被更新的短链数量
+     */
+    int updateStatusByExpireTime();
+
+&#125;
+</code></pre>
+<pre><code class="java">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;!DOCTYPE mapper
+        PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;
+        &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;
+&lt;mapper namespace=&quot;day.happy365.shorturlservice.dao.UrlMappingDao&quot;&gt;
+
+    &lt;resultMap id=&quot;BaseResultMap&quot; type=&quot;day.happy365.shorturlservice.entity.UrlMapping&quot;&gt;
+        &lt;id property=&quot;id&quot; column=&quot;id&quot; jdbcType=&quot;VARCHAR&quot;/&gt;
+        &lt;result property=&quot;url&quot; column=&quot;url&quot; jdbcType=&quot;VARCHAR&quot;/&gt;
+        &lt;result property=&quot;shortUrl&quot; column=&quot;short_url&quot; jdbcType=&quot;VARCHAR&quot;/&gt;
+        &lt;result property=&quot;expireTime&quot; column=&quot;expire_time&quot; jdbcType=&quot;TIMESTAMP&quot;/&gt;
+        &lt;result property=&quot;status&quot; column=&quot;status&quot; jdbcType=&quot;INTEGER&quot;/&gt;
+        &lt;result property=&quot;createTime&quot; column=&quot;create_time&quot; jdbcType=&quot;TIMESTAMP&quot;/&gt;
+        &lt;result property=&quot;createBy&quot; column=&quot;create_by&quot; jdbcType=&quot;VARCHAR&quot;/&gt;
+        &lt;result property=&quot;updateTime&quot; column=&quot;update_time&quot; jdbcType=&quot;TIMESTAMP&quot;/&gt;
+        &lt;result property=&quot;updateBy&quot; column=&quot;update_by&quot; jdbcType=&quot;VARCHAR&quot;/&gt;
+    &lt;/resultMap&gt;
+
+    &lt;sql id=&quot;Base_Column_List&quot;&gt;
+        id,url,short_url,
+        expire_time,status,create_time,
+        create_by,update_time,update_by
+    &lt;/sql&gt;
+
+    &lt;insert id=&quot;insert&quot; parameterType=&quot;day.happy365.shorturlservice.entity.UrlMapping&quot;&gt;
+        insert into public.t_url_mapping(url, short_url, expire_time, create_by, update_by)
+        values (#&#123;url&#125;,
+                #&#123;shortUrl&#125;,
+                #&#123;expireTime&#125;,
+                #&#123;createBy&#125;,
+                #&#123;updateBy&#125;);
+    &lt;/insert&gt;
+
+    &lt;update id=&quot;updateStatusByExpireTime&quot;&gt;
+        update public.t_url_mapping
+        set status = 1,
+            update_time = now(),
+            update_by = &#39;ExpiredURLCheckJob&#39;
+        where expire_time &lt;![CDATA[ &lt;= ]]&gt; now()::timestamp
+    &lt;/update&gt;
+
+    &lt;select id=&quot;selectByShortUrl&quot; resultMap=&quot;BaseResultMap&quot;&gt;
+        select
+        &lt;include refid=&quot;Base_Column_List&quot;/&gt;
+        from public.t_url_mapping
+        where short_url = #&#123;shortURL&#125;
+        order by create_time desc
+        limit 1
+    &lt;/select&gt;
+&lt;/mapper&gt;
+</code></pre>
+<p>数据库配置：</p>
+<pre><code class="yaml">spring:
+  application:
+    name: shorturl-service
+  datasource:
+    # 主库，用于写
+    shorturl00:
+      jdbc-url: jdbc:postgresql://vm1:5440/shorturl
+      username: postgres
+      password: *******
+      driver-class-name: org.postgresql.Driver
+    # 从库1，用于读
+    shorturl01:
+      jdbc-url: jdbc:postgresql://vm1:5441/shorturl
+      username: postgres
+      password: *******
+      driver-class-name: org.postgresql.Driver
+    # 从库2，用于读
+    shorturl02:
+      jdbc-url: jdbc:postgresql://vm1:5442/shorturl
+      username: postgres
+      password: *******
+      driver-class-name: org.postgresql.Driver
+</code></pre>
+<p>数据源配置类：</p>
+<pre><code class="java">/**
+ * 主从数据源配置
+ */
+@Configuration
+@EnableTransactionManagement
+@MapperScan(basePackages = &quot;day.happy365.shorturlservice.dao&quot;, sqlSessionFactoryRef = &quot;sqlSessionFactory&quot;)
+public class DataSourceConfig &#123;
+
+    @Bean(name = &quot;masterDataSource&quot;)
+    @Primary
+    @ConfigurationProperties(prefix = &quot;spring.datasource.shorturl00&quot;)
+    public DataSource masterDataSource() &#123;
+        return DataSourceBuilder.create().build();
+    &#125;
+
+    @Bean(name = &quot;slaveDataSource1&quot;)
+    @ConfigurationProperties(prefix = &quot;spring.datasource.shorturl01&quot;)
+    public DataSource slaveDataSource1() &#123;
+        return DataSourceBuilder.create().build();
+    &#125;
+
+    @Bean(name = &quot;slaveDataSource2&quot;)
+    @ConfigurationProperties(prefix = &quot;spring.datasource.shorturl02&quot;)
+    public DataSource slaveDataSource2() &#123;
+        return DataSourceBuilder.create().build();
+    &#125;
+
+    @Primary
+    @Bean(&quot;dynamicDataSource&quot;)
+    public DynamicRoutingDataSource dynamicDataSource(@Qualifier(value = &quot;masterDataSource&quot;) DataSource masterDataSource,
+                                                      @Qualifier(value = &quot;slaveDataSource1&quot;) DataSource slaveDataSource1,
+                                                      @Qualifier(value = &quot;slaveDataSource2&quot;) DataSource slaveDataSource2) &#123;
+        Map&lt;Object, Object&gt; targetDataSources = new HashMap&lt;&gt;(3);
+        targetDataSources.put(DynamicRoutingDataSourceContext.MASTER, masterDataSource);
+        targetDataSources.put(DynamicRoutingDataSourceContext.SLAVE1, slaveDataSource1);
+        targetDataSources.put(DynamicRoutingDataSourceContext.SLAVE2, slaveDataSource2);
+        DynamicRoutingDataSource dynamicRoutingDataSource = new DynamicRoutingDataSource();
+        // 设置数据源
+        dynamicRoutingDataSource.setTargetDataSources(targetDataSources);
+        // 设置默认选择的数据源
+        dynamicRoutingDataSource.setDefaultTargetDataSource(masterDataSource);
+        dynamicRoutingDataSource.afterPropertiesSet();
+        return dynamicRoutingDataSource;
+    &#125;
+
+    @Bean(name = &quot;sqlSessionFactory&quot;)
+    @Primary
+    public SqlSessionFactory sqlSessionFactory(@Qualifier(&quot;dynamicDataSource&quot;) DataSource dynamicDataSource) throws Exception &#123;
+        SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
+        bean.setDataSource(dynamicDataSource);
+        bean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(&quot;classpath:**/*.xml&quot;));
+        return bean.getObject();
+    &#125;
+
+&#125;
+</code></pre>
+<p>维护一个数据源 Map：</p>
+<pre><code class="java">public class DynamicRoutingDataSourceContext &#123;
+
+    public static final String MASTER = &quot;master&quot;;
+
+    public static final String SLAVE1 = &quot;slave1&quot;;
+
+    public static final String SLAVE2 = &quot;slave2&quot;;
+
+    private static final ThreadLocal&lt;String&gt; THREAD_LOCAL_DATA_SOURCE = new ThreadLocal&lt;&gt;();
+
+    public static void setRoutingDataSource(String dataSource) &#123;
+        if (dataSource == null) &#123;
+            throw new NullPointerException();
+        &#125;
+        THREAD_LOCAL_DATA_SOURCE.set(dataSource);
+    &#125;
+
+    public static String getRoutingDataSource() &#123;
+        String dataSourceType = THREAD_LOCAL_DATA_SOURCE.get();
+        if (dataSourceType == null) &#123;
+            THREAD_LOCAL_DATA_SOURCE.set(DynamicRoutingDataSourceContext.MASTER);
+            return getRoutingDataSource();
+        &#125;
+        return dataSourceType;
+    &#125;
+
+    public static void removeRoutingDataSource() &#123;
+        THREAD_LOCAL_DATA_SOURCE.remove();
+    &#125;
+&#125;
+</code></pre>
+<p>继承 AbstractRoutingDataSource 类实现 determineCurrentLookupKey 方法：</p>
+<pre><code class="java">public class DynamicRoutingDataSource extends AbstractRoutingDataSource &#123;
+
+    @Override
+    protected Object determineCurrentLookupKey() &#123;
+        String routingDataSource = DynamicRoutingDataSourceContext.getRoutingDataSource();
+        log.info(&quot;【动态数据源】本次使用数据库: &#123;&#125;&quot;, routingDataSource);
+        return routingDataSource;
+    &#125;
+
+&#125;
+</code></pre>
+<p>增加一个 TargetDataSource 注解，在执行数据库操作时指定数据库，使用起来更方便：</p>
+<pre><code class="java">@Target(&#123;ElementType.METHOD, ElementType.TYPE&#125;)
+@Retention(value = RetentionPolicy.RUNTIME)
+@Documented
+public @interface TargetDataSource &#123;
+    String value();
+&#125;
+</code></pre>
+<p>根据自定义注解的值切换数据源：</p>
+<pre><code class="java">@Order(0)
+@Aspect
+@Component
+public class DataSourceRoutingAopAspect &#123;
+
+    @Around(&quot;@annotation(targetDataSource)&quot;)
+    public Object routingWithDataSource(ProceedingJoinPoint joinPoint, TargetDataSource targetDataSource) throws Throwable &#123;
+        try &#123;
+            String value = targetDataSource.value();
+            if (&quot;slave&quot;.equals(value)) &#123;
+                if (new Random(7).nextInt() % 2 == 0) &#123;
+                    DynamicRoutingDataSourceContext.setRoutingDataSource(DynamicRoutingDataSourceContext.SLAVE1);
+                &#125; else &#123;
+                    DynamicRoutingDataSourceContext.setRoutingDataSource(DynamicRoutingDataSourceContext.SLAVE2);
+                &#125;
+            &#125; else &#123;
+                DynamicRoutingDataSourceContext.setRoutingDataSource(value);
+            &#125;
+            return joinPoint.proceed();
+        &#125; finally &#123;
+            DynamicRoutingDataSourceContext.removeRoutingDataSource();
+        &#125;
+    &#125;
+&#125;
+</code></pre>
+<p>⚠️ 最后还有最重要的一步，从启动类上排除 SpringBoot 的数据源相关的自动配置，否则会报找不到数据库配置的错误。没意识到这点，在这里卡了半个小时。</p>
+<pre><code class="java">@SpringBootApplication(exclude = &#123;DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class&#125;)
+@EnableScheduling
+@EnableAsync
+public class ShorturlServiceApplication &#123;
+
+    public static void main(String[] args) &#123;
+        SpringApplication.run(ShorturlServiceApplication.class, args);
+    &#125;
+
+&#125;
+</code></pre>
+<h2 id="Docker-部署后端服务"><a href="#Docker-部署后端服务" class="headerlink" title="Docker 部署后端服务"></a>Docker 部署后端服务</h2><h3 id="jar-包生成"><a href="#jar-包生成" class="headerlink" title="jar 包生成"></a>jar 包生成</h3><pre><code class="sh">mvn clean
+
+mvn package -DskipTests
+</code></pre>
+<h3 id="Dockerfile-编写"><a href="#Dockerfile-编写" class="headerlink" title="Dockerfile 编写"></a>Dockerfile 编写</h3><pre><code class="dockerfile">FROM openjdk:17-oracle
+
+ADD target/shorturl-service-v1.1.0.jar /shorturl-service-v1.1.0.jar
+
+RUN bash -c &#39;touch /shorturl-service-v1.1.0.jar&#39;
+
+ENV dataSource1Url=&quot;&quot;
+ENV dataSource2Url=&quot;&quot;
+ENV dataSource3Url=&quot;&quot;
+ENV dataSourceUsername=&quot;&quot;
+ENV dataSourcePassword=&quot;&quot;
+ENV sysConfigDomain=&quot;&quot;
+
+EXPOSE 8000
+
+MAINTAINER chenxii81
+
+ENTRYPOINT [&quot;java&quot;, &quot;-Dspring.datasource.shorturl00.jdbc-url=$&#123;dataSource1Url&#125;&quot;, &quot;-Dspring.datasource.shorturl00.username=$&#123;dataSourceUsername&#125;&quot;, &quot;-Dspring.datasource.shorturl00.password=$&#123;dataSourcePassword&#125;&quot;,  &quot;-Dspring.datasource.shorturl01.jdbc-url=$&#123;dataSource2Url&#125;&quot;, &quot;-Dspring.datasource.shorturl01.username=$&#123;dataSourceUsername&#125;&quot;, &quot;-Dspring.datasource.shorturl01.password=$&#123;dataSourcePassword&#125;&quot;, &quot;-Dspring.datasource.shorturl02.jdbc-url=$&#123;dataSource3Url&#125;&quot;, &quot;-Dspring.datasource.shorturl02.username=$&#123;dataSourceUsername&#125;&quot;, &quot;-Dspring.datasource.shorturl02.password=$&#123;dataSourcePassword&#125;&quot;, &quot;-Dsys.config.domain=$&#123;sysConfigDomain&#125;&quot;, &quot;-jar&quot;, &quot;/shorturl-service-v1.1.0.jar&quot;]
+</code></pre>
+<p><strong>要注意 ENTRYPOINT 括号内不能有换行。</strong></p>
+<h3 id="打包"><a href="#打包" class="headerlink" title="打包"></a>打包</h3><pre><code class="sh">docker build -t chenxii81/shorturl-service-app:v1.1.0 .
+</code></pre>
+<p>推送至 Docker Hub：</p>
+<pre><code class="sh">docker push chenxii81/shorturl-service-app:v1.1.0   
+</code></pre>
+<p>运行镜像：</p>
+<pre><code class="sh">docker run -d \
+--name shorturl-service \
+--network postgresqlnet \
+--ip 172.12.0.10 \
+-e dataSource1Url=&quot;jdbc:postgresql://pg:172.12.0.2:5440/shorturl&quot; \
+-e dataSource2Url=&quot;jdbc:postgresql://pg:172.12.0.3:5441/shorturl&quot; \
+-e dataSource3Url=&quot;jdbc:postgresql://pg:172.12.0.4:5442/shorturl&quot; \
+-e dataSourceUsername=&quot;postgres&quot; \
+-e dataSourcePassword=&quot;12345678&quot; \
+-e sysConfigDomain=&quot;http://localhost:9000/&quot; \
+-p 9000:8000 \
+chenxii81/shorturl-service-app:v1.1.0
+</code></pre>
+<h2 id="nginx-转发配置"><a href="#nginx-转发配置" class="headerlink" title="nginx 转发配置"></a>nginx 转发配置</h2><p>配置 nginx 请求后端接口：</p>
+<p>nginx.conf 文件</p>
+<pre><code>user nginx;
+worker_processes auto;
+
+error_log /var/log/nginx/error.log notice;
+pid /var/run/nginx.pid;
+
+events &#123;
+  worker_connections 1024;
+&#125;
+
+http &#123;
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+  log_format main &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot;&#39;
+                  &#39;$status $body_bytes_sent &quot;$http_referer&quot;&#39;
+                  &#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;;
+
+  access_log /var/log/nginx/access.log main;
+
+  sendfile on;
+  #tcp_nopush on;
+
+  keepalive_timeout 65;
+
+  #gzip on;
+
+  upstream www_server_pools &#123;
+    server 192.168.1.20:8000 weight=1;
+    server 192.168.1.21:8000 weight=1;
+  &#125;
+
+  include /etc/nginx/conf.d/*.conf;
+&#125;
+</code></pre>
+<p>conf.d &#x2F; default.conf 文件：</p>
+<pre><code>server &#123;
+  listen 80;
+  listen [::]:80;
+  server_name localhost;
+
+  # access_log /var/log/nginx/host.access.log main;
+
+  location = / &#123;
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+  &#125;
+
+  location = /index.html &#123;
+    root /usr/share/nginx/html;
+  &#125;
+
+  location / &#123;
+    proxy_pass http://www_server_pools;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  &#125;
+
+  # redirect server error pages to the static page /50x.html
+  #
+
+  error_page 500 502 503 504 /50x.html;
+  location = /50x.html &#123;
+    root /usr/share/nginx/html;
+  &#125;
+&#125;
+</code></pre>
+<h2 id="问题记录"><a href="#问题记录" class="headerlink" title="问题记录"></a>问题记录</h2><p>报错1：</p>
+<pre><code>***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to configure a DataSource: &#39;url&#39; attribute is not specified and no embedded datasource could be configured.
+
+Reason: Failed to determine a suitable driver class
+
+
+Action:
+
+Consider the following:
+    If you want an embedded database (H2, HSQL or Derby), please put it on the classpath.
+    If you have database settings to be loaded from a particular profile you may need to activate it (the profiles dev are currently active).
+
+
+Process finished with exit code 1
+</code></pre>
+<p>确认数据库配置无误，但是启动一直报错找不到数据库相关的配置。可参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_39629277/article/details/97782030">Spring boot遇坑之配置数据源启动报错</a></p>
+<p>需要从启动类上排除数据库自动配置。</p>
+<pre><code class="java">@SpringBootApplication(exclude = &#123;DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class&#125;)
+@EnableScheduling
+@EnableAsync
+public class ShorturlServiceApplication &#123;
+
+    public static void main(String[] args) &#123;
+        SpringApplication.run(ShorturlServiceApplication.class, args);
+    &#125;
+
+&#125;
+</code></pre>
+<p>报错2：</p>
+<pre><code>Caused by: java.io.FileNotFoundException: class path resource [**/*.xml] cannot be opened because it does not exist
+</code></pre>
+<p>可参考 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/jev-0987/p/12839193.html">Springboot 项目 无法读取resources下的mapper文件夹的.xml文件</a> 中的说明：</p>
+<blockquote>
+<p>关于PathMatchingResourcePatternResolver : <a target="_blank" rel="noopener" href="https://www.cnblogs.com/loveLands/articles/9863195.html">https://www.cnblogs.com/loveLands/articles/9863195.html</a><br>果然getResource 和 getResources不同</p>
+<p>getResource()：<br>1.从类的根路径下获取文件<br>getResources():<br>1.获取所有类路径下的指定文件<br>可以通过classpath<em>前缀指定，从所有的类路径下获取指定文件，与classpath前缀的区别是classpath前缀只能获取当类路径下的资源文件，而classpath</em>前缀可以获取所有类路径下的资源文件，包括jar包中的。</p>
+</blockquote>
+<p>报错3：项目正常启动后访问接口报 404</p>
+<p>检查了 Controller 类上 RequestMapping 路径和方法上的 RequestMapping 路径都没问题，启动日志里的启动端口正常，确认 context-path&#x3D;’’。排查了半天之后发现，是刚才在解决数据源启动报错时在 Application 类上加了 @ComponentScan，并且只指向了 dao 的路径，导致其他 controller bean 没有加载到容器里，删除启动类上的 @ComponentScan 之后重启项目，就能正常访问到接口了。</p>
+<p>报错4：通过 Docker Desktop 推送前端项目 docker 镜像至镜像仓库时报错：</p>
+<pre><code>denied: requested access to the resource is denied
+</code></pre>
+<p>在 stackoverflow 找到解决方案：镜像名称需要包含自己的 docker id 才能推送。改一下镜像名称，重新打包推送即可。</p>
+<pre><code>docker build -t your-docker-id/image-name:tag .
+</code></pre>
+<h2 id="其他问题记录"><a href="#其他问题记录" class="headerlink" title="其他问题记录"></a>其他问题记录</h2><h3 id="hashcode-可能为负数"><a href="#hashcode-可能为负数" class="headerlink" title="hashcode 可能为负数"></a>hashcode 可能为负数</h3><p>数据量较大的场景下，不同的长链接生成的 hashcode 可能会重复，进而导致生成的短链接重复。为了避免这种情况，在发现短链接重复时，需要进行重试，我采用的方案是发现重复时直接在原始链接后面拼接一个当前时间戳的参数，再重新生成。这里有个坑，就是生成的短链接 hashcode 可能为负数，导致 base62 转换时数组越界。</p>
+<p>解决方案也很简单，就是在进行 base62 转码时，先将负的 hashcode 转为正的。本来想简单直接取绝对值，后来发现有更好的实现方式：直接用位操作去掉负号。参考 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/k-class/p/13773161.html">hashcode返回值可能为负数</a></p>
+<pre><code>long hash = key.hashCode() &amp; Integer.MAX_VALUE; // caution, make value not minus
+</code></pre>
+<h3 id="Async-失效问题"><a href="#Async-失效问题" class="headerlink" title="@Async 失效问题"></a>@Async 失效问题</h3><p>开发过程中想把每个短链接访问次数记录下来，于是又加了一个字段：visit_count。每个短链接被访问时就将此值加 1。想把更新操作放在主库中异步去更新，遇到了这个问题。</p>
+<p>这算是一个老生常谈的问题了，先排查以下几点：</p>
+<ul>
+<li>启动类上是否加了 @EnableAsync</li>
+<li>异步方法的返回值只能是 void 或 Future</li>
+<li>没有走 Spring 的代理类</li>
+</ul>
+<p>3 个问题中两个 😭</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://blog.csdn.net/YoungLee16/article/details/88398045">Spring boot 注解@Async无效,不起作用</a></p>
+<h3 id="Value-取到错误的配置值"><a href="#Value-取到错误的配置值" class="headerlink" title="@Value 取到错误的配置值"></a>@Value 取到错误的配置值</h3><p>配置为：</p>
+<pre><code>sys.config.sign-check: ON
+</code></pre>
+<p>但是调试中发现程序中对应的变量值为 true。尝试将 ON 删除，保持配置为空再重启之后发现取到的值为 null。最后将配置改为：</p>
+<pre><code>sys.config.sign-check: &quot;ON&quot;
+</code></pre>
+<p>之后，可以正常读取到 ON 了。</p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="utterances_thread">
+            <noscript>加载评论需要在浏览器启用 JavaScript 脚本支持。</noscript>
+        </div>
+    </div>
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/friends/">友链</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%9C%B0%E5%9D%80"><span class="toc-number">1.</span> <span class="toc-text">服务地址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-number">2.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%B7%E5%80%BC"><span class="toc-number">3.</span> <span class="toc-text">价值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9C%80%E6%B1%82"><span class="toc-number">4.</span> <span class="toc-text">需求</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%9F%E8%83%BD%E6%80%A7%E9%9C%80%E6%B1%82"><span class="toc-number">4.1.</span> <span class="toc-text">功能性需求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E5%8A%9F%E8%83%BD%E6%80%A7%E9%9C%80%E6%B1%82"><span class="toc-number">4.2.</span> <span class="toc-text">非功能性需求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E6%95%B0%E6%8D%AE%E9%87%8F%E9%A2%84%E6%9C%9F"><span class="toc-number">5.</span> <span class="toc-text">系统数据量预期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9F%AD%E9%93%BE%E7%94%9F%E6%88%90%E6%96%B9%E6%A1%88"><span class="toc-number">6.</span> <span class="toc-text">短链生成方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%A2%9Eid"><span class="toc-number">6.1.</span> <span class="toc-text">自增id</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%99%AE%E9%80%9A%E9%9A%8F%E6%9C%BA%E6%95%B0"><span class="toc-number">6.2.</span> <span class="toc-text">普通随机数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hash"><span class="toc-number">6.3.</span> <span class="toc-text">Hash</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%A1%88"><span class="toc-number">7.</span> <span class="toc-text">数据库设计方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%89%E6%8B%A9"><span class="toc-number">7.1.</span> <span class="toc-text">数据库选择</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%BA%93%E6%96%B9%E6%A1%88"><span class="toc-number">7.2.</span> <span class="toc-text">分库方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E8%A1%A8%E6%96%B9%E6%A1%88"><span class="toc-number">7.3.</span> <span class="toc-text">分表方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%A8%E7%BB%93%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">7.4.</span> <span class="toc-text">表结构设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E8%A1%A8"><span class="toc-number">7.5.</span> <span class="toc-text">创建表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E5%88%86%E5%8C%BA%E8%A1%A8%E5%88%9B%E5%BB%BA%E8%87%AA%E5%8A%A8%E5%8C%96"><span class="toc-number">7.6.</span> <span class="toc-text">实现分区表创建自动化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B"><span class="toc-number">8.</span> <span class="toc-text">技术选型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">8.1.</span> <span class="toc-text">数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E7%AB%AF"><span class="toc-number">8.2.</span> <span class="toc-text">后端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%AB%AF"><span class="toc-number">8.3.</span> <span class="toc-text">前端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8"><span class="toc-number">8.4.</span> <span class="toc-text">容器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-Docker-%E9%83%A8%E7%BD%B2%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">9.</span> <span class="toc-text">使用 Docker 部署数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker-%E9%83%A8%E7%BD%B2-Postgresql"><span class="toc-number">10.</span> <span class="toc-text">Docker 部署 Postgresql</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98"><span class="toc-number">11.</span> <span class="toc-text">缓存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E7%AB%AF%E6%8E%A5%E5%8F%A3%E8%AE%BE%E8%AE%A1"><span class="toc-number">12.</span> <span class="toc-text">后端接口设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%AD%E9%93%BE%E7%94%9F%E6%88%90%E6%8E%A5%E5%8F%A3"><span class="toc-number">12.1.</span> <span class="toc-text">短链生成接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%AD%E9%93%BE%E7%BB%9F%E8%AE%A1%E6%95%B0%E6%8D%AE%E6%8E%A5%E5%8F%A3"><span class="toc-number">12.2.</span> <span class="toc-text">短链统计数据接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%AD%E9%93%BE%E8%AE%BF%E9%97%AE%E6%8E%A5%E5%8F%A3"><span class="toc-number">12.3.</span> <span class="toc-text">短链访问接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">13.</span> <span class="toc-text">高可用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">13.1.</span> <span class="toc-text">数据库高可用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-number">13.2.</span> <span class="toc-text">后端服务高可用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nginx-%E9%85%8D%E7%BD%AE"><span class="toc-number">14.</span> <span class="toc-text">nginx 配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%95%9C%E5%83%8F%E6%8B%89%E5%8F%96"><span class="toc-number">14.1.</span> <span class="toc-text">镜像拉取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="toc-number">14.2.</span> <span class="toc-text">准备配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%AE%B9%E5%99%A8"><span class="toc-number">14.3.</span> <span class="toc-text">启动容器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%AB%AF%E9%A1%B9%E7%9B%AE"><span class="toc-number">15.</span> <span class="toc-text">前端项目</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Vue-%E9%A1%B9%E7%9B%AE%E6%90%AD%E5%BB%BA"><span class="toc-number">15.1.</span> <span class="toc-text">Vue 项目搭建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Axios-%E9%85%8D%E7%BD%AE"><span class="toc-number">15.2.</span> <span class="toc-text">Axios 配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E9%9D%A2%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="toc-number">15.3.</span> <span class="toc-text">页面代码实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%8C%85%E9%83%A8%E7%BD%B2%E8%87%B3-nginx"><span class="toc-number">15.4.</span> <span class="toc-text">打包部署至 nginx</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Docker-%E9%95%9C%E5%83%8F%E7%94%9F%E6%88%90"><span class="toc-number">15.5.</span> <span class="toc-text">Docker 镜像生成</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Springboot-MyBatis-%E5%A4%9A%E6%95%B0%E6%8D%AE%E6%BA%90%E9%85%8D%E7%BD%AE"><span class="toc-number">16.</span> <span class="toc-text">Springboot + MyBatis 多数据源配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Docker-%E9%83%A8%E7%BD%B2%E5%90%8E%E7%AB%AF%E6%9C%8D%E5%8A%A1"><span class="toc-number">17.</span> <span class="toc-text">Docker 部署后端服务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#jar-%E5%8C%85%E7%94%9F%E6%88%90"><span class="toc-number">17.1.</span> <span class="toc-text">jar 包生成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Dockerfile-%E7%BC%96%E5%86%99"><span class="toc-number">17.2.</span> <span class="toc-text">Dockerfile 编写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%8C%85"><span class="toc-number">17.3.</span> <span class="toc-text">打包</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nginx-%E8%BD%AC%E5%8F%91%E9%85%8D%E7%BD%AE"><span class="toc-number">18.</span> <span class="toc-text">nginx 转发配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95"><span class="toc-number">19.</span> <span class="toc-text">问题记录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95"><span class="toc-number">20.</span> <span class="toc-text">其他问题记录</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#hashcode-%E5%8F%AF%E8%83%BD%E4%B8%BA%E8%B4%9F%E6%95%B0"><span class="toc-number">20.1.</span> <span class="toc-text">hashcode 可能为负数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Async-%E5%A4%B1%E6%95%88%E9%97%AE%E9%A2%98"><span class="toc-number">20.2.</span> <span class="toc-text">@Async 失效问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Value-%E5%8F%96%E5%88%B0%E9%94%99%E8%AF%AF%E7%9A%84%E9%85%8D%E7%BD%AE%E5%80%BC"><span class="toc-number">20.3.</span> <span class="toc-text">@Value 取到错误的配置值</span></a></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2024/04/13/7c444bb72964/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&text=动手实现一个短链接服务"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&title=动手实现一个短链接服务"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&is_video=false&description=动手实现一个短链接服务"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=动手实现一个短链接服务&body=Check out this article: https://lozhu.happy365.day/2024/04/13/7c444bb72964/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&title=动手实现一个短链接服务"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&title=动手实现一个短链接服务"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&title=动手实现一个短链接服务"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&title=动手实现一个短链接服务"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&name=动手实现一个短链接服务&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2024/04/13/7c444bb72964/&t=动手实现一个短链接服务"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    <!-- Copyright --> &copy;
+    
+    
+    2018-2024
+    lozhu
+  </div>
+  
+    <div>
+      <a href="https://icp.gov.moe/?keyword=20249900" target="_blank">萌ICP备 20249900 号</a>
+    </div>
+  
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?8bdf047ae0a66729bd3b27e8bb56fe11";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      </script>
+
+<!-- 51la Analytics -->
+
+  <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+  <script>
+  LA.init({
+      id: '3I0QIERSX42bDzDc',
+      ck: '3I0QIERSX42bDzDc'
+  })
+  </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+    <script type="text/javascript">
+      var utterances_repo = 'lozhu20/my-blog-comments';
+      var utterances_issue_term = 'pathname';
+      var utterances_label = 'Comment';
+      var utterances_theme = 'github-light';
+
+      (function(){
+          var script = document.createElement('script');
+
+          script.src = 'https://utteranc.es/client.js';
+          script.setAttribute('repo', utterances_repo);
+          script.setAttribute('issue-term', 'pathname');
+          script.setAttribute('label', utterances_label);
+          script.setAttribute('theme', utterances_theme);
+          script.setAttribute('crossorigin', 'anonymous');
+          script.async = true;
+          (document.getElementById('utterances_thread')).appendChild(script);
+      }());
+  </script>
+
+<!-- image modal -->
+<script>
+  (function() {
+    var contentNode = document.getElementsByClassName('content e-content');
+    if (!contentNode || contentNode.length === 0) {
+      console.log('no content, exit');
+      return;
+    }
+
+    var imgsNodes = contentNode[0].getElementsByTagName('img');
+    if (!imgsNodes || imgsNodes.length === 0) {
+      console.log('no image, exit');
+      return;
+    }
+
+    var span = document.getElementById('modal_close_btn');
+    span.onclick = function() { 
+      modal.style.display = "none";
+    };
+
+    var modal = document.getElementById('modal');
+    var modalImage = document.getElementById('modal_image');
+    var captionText = document.getElementById('caption');
+
+    for (var i = imgsNodes.length - 1; i >= 0; i--) {
+      let image = imgsNodes[i];
+      image.onclick = function() {
+        modal.style.display = "block";
+        modalImage.src = this.src;
+        captionText.innerHTML = this.alt || "文章配图";
+      };
+    }
+  }());
+</script>
+
+</body>
+</html>

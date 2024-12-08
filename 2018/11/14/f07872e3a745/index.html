@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="baidu-site-verification" content="codeva-OBV0UPgBod" />
+    <meta name="msvalidate.01" content="B9019CE3751A15D63E78AF8679980069" />
+    <meta name="description" content="第一部分：Spring的核心  第一章：Spring之旅 介绍Spring框架，包括Spring DI和AOP。  第二章：装配Bean Spring的自动配置、基于Java的配置和XML配置。  第三章：高级装配 Spring的条件化配置，处理自动装配时的歧义性，作用域以及Spring表达式语言。  第四章：面向切面的Spring 展示如何使用Spring的AOP特性把系统级服务从它们所服务的对">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring学习笔记-第一章-Spring之旅">
+<meta property="og:url" content="https://lozhu.happy365.day/2018/11/14/f07872e3a745/index.html">
+<meta property="og:site_name" content="Lozhu&#39;s blog">
+<meta property="og:description" content="第一部分：Spring的核心  第一章：Spring之旅 介绍Spring框架，包括Spring DI和AOP。  第二章：装配Bean Spring的自动配置、基于Java的配置和XML配置。  第三章：高级装配 Spring的条件化配置，处理自动装配时的歧义性，作用域以及Spring表达式语言。  第四章：面向切面的Spring 展示如何使用Spring的AOP特性把系统级服务从它们所服务的对">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://image.youyou-2608.com/blog/AOP1.png">
+<meta property="og:image" content="https://image.youyou-2608.com/bean-lifecycle.png">
+<meta property="og:image" content="https://image.youyou-2608.com/bean2.png">
+<meta property="og:image" content="https://image.youyou-2608.com/springmodel">
+<meta property="article:published_time" content="2018-11-14T12:49:29.000Z">
+<meta property="article:modified_time" content="2024-12-08T06:50:57.171Z">
+<meta property="article:author" content="lozhu">
+<meta property="article:tag" content="Spring">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://image.youyou-2608.com/blog/AOP1.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Spring学习笔记-第一章-Spring之旅</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XMGS491MQF"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XMGS491MQF');
+  </script>
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Lozhu's blog" type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="modal" class="modal">
+  <span id="modal_close_btn" class="modal-close-btn">x</span>
+  <img id="modal_image" class="modal-image">
+  <!-- <div id="caption"></div> -->
+</div>
+
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2018/11/16/6c260e858eb5/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2018/11/11/a80e137e58a1/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2018/11/14/f07872e3a745/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&text=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&title=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&is_video=false&description=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=Spring学习笔记-第一章-Spring之旅&body=Check out this article: https://lozhu.happy365.day/2018/11/14/f07872e3a745/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&title=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&title=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-reddit " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&title=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&title=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-digg " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&name=Spring学习笔记-第一章-Spring之旅&description=&lt;p&gt;第一部分：Spring的核心&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;第一章：Spring之旅&lt;/p&gt;
+&lt;p&gt;介绍Spring框架，包括Spring DI和AOP。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;第二章：装配Bean&lt;/p&gt;
+&lt;p&gt;Spring的自动配置、基于Java的配置和XML配置。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;第三章：高级装配&lt;/p&gt;
+&lt;p&gt;Spring的条件化配置，处理自动装配时的歧义性，作用域以及Spring表达式语言。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;第四章：面向切面的Spring&lt;/p&gt;
+&lt;p&gt;展示如何使用Spring的AOP特性把系统级服务从它们所服务的对象中解耦出来。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&t=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E7%AE%80%E5%8C%96Java%E5%BC%80%E5%8F%91"><span class="toc-number">1.</span> <span class="toc-text">1.1 简化Java开发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-1-Spring%E7%9A%84%E9%9D%9E%E4%BE%B5%E5%85%A5%E5%BC%8F%E7%BC%96%E7%A8%8B"><span class="toc-number">1.1.</span> <span class="toc-text">1.1.1 Spring的非侵入式编程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-2-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5"><span class="toc-number">1.2.</span> <span class="toc-text">1.1.2 依赖注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-3-%E5%BA%94%E7%94%A8%E5%88%87%E9%9D%A2"><span class="toc-number">1.3.</span> <span class="toc-text">1.1.3 应用切面</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-4-%E4%BD%BF%E7%94%A8%E6%A8%A1%E6%9D%BF%E6%B6%88%E9%99%A4%E6%A0%B7%E6%9D%BF%E5%BC%8F%E4%BB%A3%E7%A0%81"><span class="toc-number">1.4.</span> <span class="toc-text">1.1.4 使用模板消除样板式代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E5%AE%B9%E7%BA%B3%E4%BD%A0%E7%9A%84bean"><span class="toc-number">2.</span> <span class="toc-text">1.2 容纳你的bean</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E4%BF%AF%E7%9E%B0Spring%E9%A3%8E%E6%99%AF%E7%BA%BF"><span class="toc-number">3.</span> <span class="toc-text">1.3 俯瞰Spring风景线</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Spring学习笔记-第一章-Spring之旅
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">lozhu</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-11-14T12:49:29.000Z" class="dt-published" itemprop="datePublished">2018-11-14</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+    </div>
+
+
+      
+    <!-- <div class="article-tag"> -->
+    <div class="article-category">
+        <i class="fa-solid fa-tag"></i>
+        <!-- <a class="p-category" href="/tags/Spring/" rel="tag">Spring</a> -->
+        <a class="category-link" href="/tags/Spring/" rel="tag">Spring</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>第一部分：Spring的核心</p>
+<ul>
+<li><p>第一章：Spring之旅</p>
+<p>介绍Spring框架，包括Spring DI和AOP。</p>
+</li>
+<li><p>第二章：装配Bean</p>
+<p>Spring的自动配置、基于Java的配置和XML配置。</p>
+</li>
+<li><p>第三章：高级装配</p>
+<p>Spring的条件化配置，处理自动装配时的歧义性，作用域以及Spring表达式语言。</p>
+</li>
+<li><p>第四章：面向切面的Spring</p>
+<p>展示如何使用Spring的AOP特性把系统级服务从它们所服务的对象中解耦出来。</p>
+</li>
+</ul>
+<span id="more"></span>
+
+
+
+
+
+<hr>
+<p>第一章 Spring之旅</p>
+<p>本章内容：</p>
+<ul>
+<li>Spring的Bean容器</li>
+<li>介绍Spring的核心模块</li>
+<li>更为强大的Spring生态系统</li>
+<li>Spring的新功能</li>
+</ul>
+<p><strong>创建Spring的主要目的是用来替代更加重量级的企业级Java技术，尤其是EJB。</strong>相当于EJB来说，Spring提供了更加轻量级和更加简单的编程模型。</p>
+<hr>
+<h2 id="1-1-简化Java开发"><a href="#1-1-简化Java开发" class="headerlink" title="1.1 简化Java开发"></a>1.1 简化Java开发</h2><h3 id="1-1-1-Spring的非侵入式编程"><a href="#1-1-1-Spring的非侵入式编程" class="headerlink" title="1.1.1 Spring的非侵入式编程"></a>1.1.1 Spring的非侵入式编程</h3><p>在基于Spring构建的应用中，一般不会有任何痕迹表明你使用了Spring，最坏的场景是在一个类上使用了Spring注解，但是这个类依旧是一个Pojo类。</p>
+<p>Spring的非侵入式编程模型意味着这个类在Spring应用还是在非Spring应用中都能发挥同样的作用。</p>
+<pre><code class="java">package com.kotobuki;
+
+/**
+ * @author zhulongkun20@163.com
+ * @since 2018/11/14 下午9:18
+ */
+public class HelloWorld &#123;
+    public String sayHello() &#123;
+        return &quot;Hello world&quot;;
+    &#125;
+&#125;
+</code></pre>
+<h3 id="1-1-2-依赖注入"><a href="#1-1-2-依赖注入" class="headerlink" title="1.1.2 依赖注入"></a>1.1.2 依赖注入</h3><p>在一个应用中通常会涉及到很多类，这些类需要相互协作来完成特定的功能，如果让每个类管理与自己协作的类，则会导致应用高度耦合。</p>
+<blockquote>
+<p> 依赖注入带来的最大好处就是松耦合。如果一个对象只通过借口来表明依赖关系，那么这种依赖就能够在对象毫不知情的情况下用不同的实现替换。</p>
+<p>可以让对其他的类有依赖的类自动获得已经准备好的依赖。</p>
+</blockquote>
+<p>一个送外卖的过程：当不是用DI的时候送餐员需要自己准备外卖，然后再配送。</p>
+<pre><code class="java">package com.clerk;
+
+import com.com.food.Dinner;
+
+/**
+ * @author zhulongkun20@163.com
+ * @since 2018/11/15 下午8:31
+ */
+public class DeliveryWithoutDI implements Delivery &#123;
+    private Dinner dinner;
+
+    public DeliveryWithoutDI() &#123;
+        this.dinner = new Dinner(&quot;rice&quot;);
+    &#125;
+
+    @Override
+    public void delivery() &#123;
+        System.out.println(&quot;delivery it on time.&quot;);
+    &#125;
+&#125;
+</code></pre>
+<p>当使用DI之后，当有外卖需要配送的时候，分配送餐员，送餐员会自动获得需要配送的外卖，需要做的只是负责配送，而不用关心其他事情。</p>
+<pre><code class="java">package com.clerk;
+
+import com.com.food.Dinner;
+
+/**
+ * @author zhulongkun20@163.com
+ * @since 2018/11/15 下午8:24
+ */
+public class DeliveryClerk implements Delivery &#123;
+    private Dinner dinner;
+
+    public DeliveryClerk(Dinner dinner) &#123;
+        this.dinner = dinner;
+    &#125;
+
+    @Override
+    public void delivery() &#123;
+        System.out.println(&quot;delivery on time.&quot;);
+    &#125;
+&#125;
+</code></pre>
+<h3 id="1-1-3-应用切面"><a href="#1-1-3-应用切面" class="headerlink" title="1.1.3 应用切面"></a>1.1.3 应用切面</h3><blockquote>
+<p>面向切面编程允许你把遍布应用各处的功能分离出来形成可重用的组件。</p>
+</blockquote>
+<p>一个系统或应用由许多不同的组件构成，但是每一个组件在负责自己的功能之外，通常还要承担额外的责任。一些与核心业务无关的代码会融入到核心业务逻辑中。比如转账，除了发生金钱的转移之外，还要验证身份、记录账单以及给用户发送通知。这些会跨越系统的组件成为横切关注点。它们会使核心业务代码变得复杂。</p>
+<p><img src="https://image.youyou-2608.com/blog/AOP1.png" alt="Spring AOP"></p>
+<p>通过AOP，可以将与核心业务无关的代码分离出来。</p>
+<h3 id="1-1-4-使用模板消除样板式代码"><a href="#1-1-4-使用模板消除样板式代码" class="headerlink" title="1.1.4 使用模板消除样板式代码"></a>1.1.4 使用模板消除样板式代码</h3><p>使用JDBC访问数据库，会产生大量与查询语句无关的代码，还必须要捕捉异常，虽然无济于事。</p>
+<p>Spring旨在通过模板封装来消除样板式代码。</p>
+<p><a target="_blank" rel="noopener" href="https://docs.spring.io/spring-framework/docs/current/spring-framework-reference/data-access.html#spring-data-tier">Data Access with JDBC</a></p>
+<h2 id="1-2-容纳你的bean"><a href="#1-2-容纳你的bean" class="headerlink" title="1.2 容纳你的bean"></a>1.2 容纳你的bean</h2><blockquote>
+<p>在Spring应用中，你的应用对象生存于Spring容器中，Spring容器负责创建对象，装配并管理它们的整个生命周期。</p>
+</blockquote>
+<p>使用应用上下文：</p>
+<ul>
+<li>AnnotationConfigApplicationContext：从一个或多个基于Java的配置类中加载Spring应用上下文。</li>
+<li>AnnotationConfigWebApplicationContext：从一个或多个基于Java的配置类中加载Spring Web应用上下文。</li>
+<li>ClassPathXmlApplicationContext：从类路径下的一个或多个XML配置文件中加载上下文定义。</li>
+<li>FileSystemXmlApplicationContext：从文件系统下的一个或多个XML配置文件中加载上下文定义。</li>
+<li>XmlWebApplicationContext：从Web应用下的一个或多个XML配置文件中还在上下文定义。</li>
+</ul>
+<p>bean的生命周期：</p>
+<p><img src="https://image.youyou-2608.com/bean-lifecycle.png" alt="bean的生命周期"></p>
+<p><img src="https://image.youyou-2608.com/bean2.png" alt="Bean的生命周期"></p>
+<h2 id="1-3-俯瞰Spring风景线"><a href="#1-3-俯瞰Spring风景线" class="headerlink" title="1.3 俯瞰Spring风景线"></a>1.3 俯瞰Spring风景线</h2><p>Spring的模块：</p>
+<p><img src="https://image.youyou-2608.com/springmodel" alt="Spring模块"></p>
+<table>
+<thead>
+<tr>
+<th><a target="_blank" rel="noopener" href="https://docs.spring.io/spring/docs/5.1.2.RELEASE/spring-framework-reference/core.html#spring-core">Core</a></th>
+<th>IoC container, Events, Resources, i18n, Validation, Data Binding, Type Conversion, SpEL, AOP.</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://docs.spring.io/spring/docs/5.1.2.RELEASE/spring-framework-reference/testing.html#testing">Testing</a></td>
+<td>Mock objects, TestContext framework, Spring MVC Test, WebTestClient.</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.spring.io/spring/docs/5.1.2.RELEASE/spring-framework-reference/data-access.html#spring-data-tier">Data Access</a></td>
+<td>Transactions, DAO support, JDBC, ORM, Marshalling XML.</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.spring.io/spring/docs/5.1.2.RELEASE/spring-framework-reference/web.html#spring-web">Web Servlet</a></td>
+<td>Spring MVC, WebSocket, SockJS, STOMP messaging.</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.spring.io/spring/docs/5.1.2.RELEASE/spring-framework-reference/web-reactive.html#spring-webflux">Web Reactive</a></td>
+<td>Spring WebFlux, WebClient, WebSocket.</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.spring.io/spring/docs/5.1.2.RELEASE/spring-framework-reference/integration.html#spring-integration">Integration</a></td>
+<td>Remoting, JMS, JCA, JMX, Email, Tasks, Scheduling, Cache.</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.spring.io/spring/docs/5.1.2.RELEASE/spring-framework-reference/languages.html#languages">Languages</a></td>
+<td>Kotlin, Groovy, Dynamic languages.</td>
+</tr>
+</tbody></table>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="utterances_thread">
+            <noscript>加载评论需要在浏览器启用 JavaScript 脚本支持。</noscript>
+        </div>
+    </div>
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/friends/">友链</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E7%AE%80%E5%8C%96Java%E5%BC%80%E5%8F%91"><span class="toc-number">1.</span> <span class="toc-text">1.1 简化Java开发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-1-Spring%E7%9A%84%E9%9D%9E%E4%BE%B5%E5%85%A5%E5%BC%8F%E7%BC%96%E7%A8%8B"><span class="toc-number">1.1.</span> <span class="toc-text">1.1.1 Spring的非侵入式编程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-2-%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5"><span class="toc-number">1.2.</span> <span class="toc-text">1.1.2 依赖注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-3-%E5%BA%94%E7%94%A8%E5%88%87%E9%9D%A2"><span class="toc-number">1.3.</span> <span class="toc-text">1.1.3 应用切面</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-4-%E4%BD%BF%E7%94%A8%E6%A8%A1%E6%9D%BF%E6%B6%88%E9%99%A4%E6%A0%B7%E6%9D%BF%E5%BC%8F%E4%BB%A3%E7%A0%81"><span class="toc-number">1.4.</span> <span class="toc-text">1.1.4 使用模板消除样板式代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E5%AE%B9%E7%BA%B3%E4%BD%A0%E7%9A%84bean"><span class="toc-number">2.</span> <span class="toc-text">1.2 容纳你的bean</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E4%BF%AF%E7%9E%B0Spring%E9%A3%8E%E6%99%AF%E7%BA%BF"><span class="toc-number">3.</span> <span class="toc-text">1.3 俯瞰Spring风景线</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2018/11/14/f07872e3a745/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&text=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&title=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&is_video=false&description=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=Spring学习笔记-第一章-Spring之旅&body=Check out this article: https://lozhu.happy365.day/2018/11/14/f07872e3a745/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&title=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&title=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&title=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&title=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&name=Spring学习笔记-第一章-Spring之旅&description=&lt;p&gt;第一部分：Spring的核心&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;第一章：Spring之旅&lt;/p&gt;
+&lt;p&gt;介绍Spring框架，包括Spring DI和AOP。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;第二章：装配Bean&lt;/p&gt;
+&lt;p&gt;Spring的自动配置、基于Java的配置和XML配置。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;第三章：高级装配&lt;/p&gt;
+&lt;p&gt;Spring的条件化配置，处理自动装配时的歧义性，作用域以及Spring表达式语言。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;第四章：面向切面的Spring&lt;/p&gt;
+&lt;p&gt;展示如何使用Spring的AOP特性把系统级服务从它们所服务的对象中解耦出来。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2018/11/14/f07872e3a745/&t=Spring学习笔记-第一章-Spring之旅"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    <!-- Copyright --> &copy;
+    
+    
+    2018-2024
+    lozhu
+  </div>
+  
+    <div>
+      <a href="https://icp.gov.moe/?keyword=20249900" target="_blank">萌ICP备 20249900 号</a>
+    </div>
+  
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?8bdf047ae0a66729bd3b27e8bb56fe11";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      </script>
+
+<!-- 51la Analytics -->
+
+  <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+  <script>
+  LA.init({
+      id: '3I0QIERSX42bDzDc',
+      ck: '3I0QIERSX42bDzDc'
+  })
+  </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+    <script type="text/javascript">
+      var utterances_repo = 'lozhu20/my-blog-comments';
+      var utterances_issue_term = 'pathname';
+      var utterances_label = 'Comment';
+      var utterances_theme = 'github-light';
+
+      (function(){
+          var script = document.createElement('script');
+
+          script.src = 'https://utteranc.es/client.js';
+          script.setAttribute('repo', utterances_repo);
+          script.setAttribute('issue-term', 'pathname');
+          script.setAttribute('label', utterances_label);
+          script.setAttribute('theme', utterances_theme);
+          script.setAttribute('crossorigin', 'anonymous');
+          script.async = true;
+          (document.getElementById('utterances_thread')).appendChild(script);
+      }());
+  </script>
+
+<!-- image modal -->
+<script>
+  (function() {
+    var contentNode = document.getElementsByClassName('content e-content');
+    if (!contentNode || contentNode.length === 0) {
+      console.log('no content, exit');
+      return;
+    }
+
+    var imgsNodes = contentNode[0].getElementsByTagName('img');
+    if (!imgsNodes || imgsNodes.length === 0) {
+      console.log('no image, exit');
+      return;
+    }
+
+    var span = document.getElementById('modal_close_btn');
+    span.onclick = function() { 
+      modal.style.display = "none";
+    };
+
+    var modal = document.getElementById('modal');
+    var modalImage = document.getElementById('modal_image');
+    var captionText = document.getElementById('caption');
+
+    for (var i = imgsNodes.length - 1; i >= 0; i--) {
+      let image = imgsNodes[i];
+      image.onclick = function() {
+        modal.style.display = "block";
+        modalImage.src = this.src;
+        captionText.innerHTML = this.alt || "文章配图";
+      };
+    }
+  }());
+</script>
+
+</body>
+</html>

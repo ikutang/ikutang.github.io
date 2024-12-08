@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="baidu-site-verification" content="codeva-OBV0UPgBod" />
+    <meta name="msvalidate.01" content="B9019CE3751A15D63E78AF8679980069" />
+    <meta name="description" content="ch2 创建和销毁对象考虑使用静态工厂方法代替构造器1、静态工厂方法相比构造方法来说，可以指定名称；构造函数的名称必须和类名一致，丧失了灵活性。如果有构造方法重载，又存在多个构造参数的时候，这个问题更明显。 &#x2F;&#x2F; 存在多个构造参数，不易读 Date date0 &#x3D; new Date(); Date date1 &#x3D; new Date(0L); Date date2 &#x3D; new Date(&quot;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="effective java">
+<meta property="og:url" content="https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/index.html">
+<meta property="og:site_name" content="Lozhu&#39;s blog">
+<meta property="og:description" content="ch2 创建和销毁对象考虑使用静态工厂方法代替构造器1、静态工厂方法相比构造方法来说，可以指定名称；构造函数的名称必须和类名一致，丧失了灵活性。如果有构造方法重载，又存在多个构造参数的时候，这个问题更明显。 &#x2F;&#x2F; 存在多个构造参数，不易读 Date date0 &#x3D; new Date(); Date date1 &#x3D; new Date(0L); Date date2 &#x3D; new Date(&quot;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-26T14:56:29.000Z">
+<meta property="article:modified_time" content="2024-12-08T06:50:57.171Z">
+<meta property="article:author" content="lozhu">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="effective java">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>effective java</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XMGS491MQF"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XMGS491MQF');
+  </script>
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Lozhu's blog" type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="modal" class="modal">
+  <span id="modal_close_btn" class="modal-close-btn">x</span>
+  <img id="modal_image" class="modal-image">
+  <!-- <div id="caption"></div> -->
+</div>
+
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2022/08/14/e3805f6785ac/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2022/04/01/3762ce77035a/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&text=effective java"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&title=effective java"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&is_video=false&description=effective java"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=effective java&body=Check out this article: https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&title=effective java"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&title=effective java"><i class="fab fa-reddit " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&title=effective java"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&title=effective java"><i class="fab fa-digg " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&name=effective java&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&t=effective java"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ch2-%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.</span> <span class="toc-text">ch2 创建和销毁对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%80%83%E8%99%91%E4%BD%BF%E7%94%A8%E9%9D%99%E6%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E4%BB%A3%E6%9B%BF%E6%9E%84%E9%80%A0%E5%99%A8"><span class="toc-number">1.1.</span> <span class="toc-text">考虑使用静态工厂方法代替构造器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E9%9D%99%E6%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E7%9B%B8%E6%AF%94%E6%9E%84%E9%80%A0%E6%96%B9%E6%B3%95%E6%9D%A5%E8%AF%B4%EF%BC%8C%E5%8F%AF%E4%BB%A5%E6%8C%87%E5%AE%9A%E5%90%8D%E7%A7%B0%EF%BC%9B"><span class="toc-number">1.1.1.</span> <span class="toc-text">1、静态工厂方法相比构造方法来说，可以指定名称；</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E9%9D%99%E6%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E5%8F%AF%E4%BB%A5%E6%8E%A7%E5%88%B6%E5%8D%95%E4%BE%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text">2、静态工厂方法可以控制单例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E5%8F%AF%E4%BB%A5%E8%BF%94%E5%9B%9E%E5%8E%9F%E8%BF%94%E5%9B%9E%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%AD%90%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.1.3.</span> <span class="toc-text">3、可以返回原返回类型的子类型</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%87%E5%88%B0%E5%A4%9A%E4%B8%AA%E6%9E%84%E9%80%A0%E5%99%A8%E5%8F%82%E6%95%B0%E6%97%B6%E8%A6%81%E8%80%83%E8%99%91%E7%94%A8%E6%9E%84%E5%BB%BA%E5%99%A8"><span class="toc-number">1.2.</span> <span class="toc-text">遇到多个构造器参数时要考虑用构建器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E7%A7%81%E6%9C%89%E6%9E%84%E9%80%A0%E5%99%A8%E5%92%8C%E6%9E%9A%E4%B8%BE%E5%BC%BA%E5%8C%96-Singleton-%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.3.</span> <span class="toc-text">用私有构造器和枚举强化 Singleton 类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E7%A7%81%E6%9C%89%E6%9E%84%E9%80%A0%E6%96%B9%E6%B3%95%E5%BC%BA%E5%8C%96%E4%B8%8D%E5%8F%AF%E5%AE%9E%E4%BE%8B%E5%8C%96%E7%9A%84%E8%83%BD%E5%8A%9B"><span class="toc-number">1.4.</span> <span class="toc-text">通过私有构造方法强化不可实例化的能力</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%BF%E5%85%8D%E5%88%9B%E9%80%A0%E4%B8%8D%E5%BF%85%E8%A6%81%E7%9A%84%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.5.</span> <span class="toc-text">避免创造不必要的对象</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">1.5.1.</span> <span class="toc-text">1、字符串</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E9%9D%99%E6%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E4%BC%98%E4%BA%8E%E6%9E%84%E9%80%A0%E5%99%A8"><span class="toc-number">1.5.2.</span> <span class="toc-text">2、静态工厂方法优于构造器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7"><span class="toc-number">1.5.3.</span> <span class="toc-text">3、静态属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%E3%80%81%E5%9F%BA%E6%9C%AC%E7%B1%BB%E5%9E%8B%E4%B8%8E%E5%8C%85%E8%A3%85%E7%B1%BB"><span class="toc-number">1.5.4.</span> <span class="toc-text">4、基本类型与包装类</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E9%99%A4%E8%BF%87%E6%9C%9F%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%BC%95%E7%94%A8"><span class="toc-number">1.6.</span> <span class="toc-text">消除过期的对象引用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E4%B8%80%E4%B8%AA%E7%B1%BB%E8%87%AA%E5%B7%B1%E7%AE%A1%E7%90%86%E5%86%85%E5%AD%98%E5%AE%B9%E6%98%93%E5%AF%BC%E8%87%B4%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F"><span class="toc-number">1.6.1.</span> <span class="toc-text">1、一个类自己管理内存容易导致内存泄漏</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E7%BC%93%E5%AD%98%E5%AE%B9%E6%98%93%E5%AF%BC%E8%87%B4%E5%86%85%E7%B2%97%E6%B3%84%E6%BC%8F"><span class="toc-number">1.6.2.</span> <span class="toc-text">2、缓存容易导致内粗泄漏</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ch3-%E5%AF%B9%E4%BA%8E%E6%89%80%E6%9C%89%E5%AF%B9%E8%B1%A1%E9%83%BD%E9%80%9A%E7%94%A8%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">ch3 对于所有对象都通用的方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A6%86%E7%9B%96-equals-%E7%9A%84%E6%97%B6%E5%80%99%E8%AF%B7%E9%81%B5%E5%AE%88%E9%80%9A%E7%94%A8%E7%BA%A6%E5%AE%9A"><span class="toc-number">2.1.</span> <span class="toc-text">覆盖 equals 的时候请遵守通用约定</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E9%9C%80%E8%A6%81%E8%A6%86%E7%9B%96-equals-%E6%96%B9%E6%B3%95%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-number">2.1.1.</span> <span class="toc-text">不需要覆盖 equals 方法的场景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E8%A6%86%E7%9B%96-equals-%E6%96%B9%E6%B3%95"><span class="toc-number">2.1.2.</span> <span class="toc-text">如何覆盖 equals 方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A6%86%E7%9B%96-equals-%E6%96%B9%E6%B3%95%E7%9A%84%E4%B8%80%E4%BA%9B%E5%91%8A%E8%AF%AB"><span class="toc-number">2.1.3.</span> <span class="toc-text">覆盖 equals 方法的一些告诫</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A6%86%E7%9B%96-equals-%E6%96%B9%E6%B3%95%E6%97%B6%E6%80%BB%E6%98%AF%E8%A6%81%E8%A6%86%E7%9B%96-hashCode"><span class="toc-number">2.2.</span> <span class="toc-text">覆盖 equals 方法时总是要覆盖 hashCode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A7%8B%E7%BB%88%E8%A6%81%E8%A6%86%E7%9B%96-toString"><span class="toc-number">2.3.</span> <span class="toc-text">始终要覆盖 toString</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%A8%E6%85%8E%E7%9A%84%E8%A6%86%E7%9B%96-clone"><span class="toc-number">2.4.</span> <span class="toc-text">谨慎的覆盖 clone</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%80%83%E8%99%91%E5%AE%9E%E7%8E%B0-Comparable-%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.5.</span> <span class="toc-text">考虑实现 Comparable 接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ch4-%E7%B1%BB%E5%92%8C%E6%8E%A5%E5%8F%A3"><span class="toc-number">3.</span> <span class="toc-text">ch4 类和接口</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%B1%BB%E5%92%8C%E6%88%90%E5%91%98%E7%9A%84%E5%8F%AF%E8%AE%BF%E9%97%AE%E6%80%A7%E6%9C%80%E5%B0%8F%E5%8C%96"><span class="toc-number">3.1.</span> <span class="toc-text">使类和成员的可访问性最小化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8%E5%85%AC%E6%9C%89%E7%B1%BB%E4%B8%AD%E4%BD%BF%E7%94%A8%E5%85%AC%E6%9C%89%E6%96%B9%E6%B3%95%E8%80%8C%E9%9D%9E%E5%85%AC%E6%9C%89%E5%9F%9F"><span class="toc-number">3.2.</span> <span class="toc-text">在公有类中使用公有方法而非公有域</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E5%8F%AF%E5%8F%98%E5%BD%A2%E6%9C%80%E5%B0%8F"><span class="toc-number">3.3.</span> <span class="toc-text">使可变形最小</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%90%88%E4%BC%98%E4%BA%8E%E7%BB%A7%E6%89%BF"><span class="toc-number">3.4.</span> <span class="toc-text">复合优于继承</span></a></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        effective java
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">lozhu</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-07-26T14:56:29.000Z" class="dt-published" itemprop="datePublished">2022-07-26</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+    </div>
+
+
+      
+    <!-- <div class="article-tag"> -->
+    <div class="article-category">
+        <i class="fa-solid fa-tag"></i>
+        <!-- <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/effective-java/" rel="tag">effective java</a> -->
+        <a class="category-link" href="/tags/Java/" rel="tag">Java</a>, <a class="category-link" href="/tags/effective-java/" rel="tag">effective java</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="ch2-创建和销毁对象"><a href="#ch2-创建和销毁对象" class="headerlink" title="ch2 创建和销毁对象"></a>ch2 创建和销毁对象</h2><h3 id="考虑使用静态工厂方法代替构造器"><a href="#考虑使用静态工厂方法代替构造器" class="headerlink" title="考虑使用静态工厂方法代替构造器"></a>考虑使用静态工厂方法代替构造器</h3><h4 id="1、静态工厂方法相比构造方法来说，可以指定名称；"><a href="#1、静态工厂方法相比构造方法来说，可以指定名称；" class="headerlink" title="1、静态工厂方法相比构造方法来说，可以指定名称；"></a>1、静态工厂方法相比构造方法来说，可以指定名称；</h4><p>构造函数的名称必须和类名一致，丧失了灵活性。如果有构造方法重载，又存在多个构造参数的时候，这个问题更明显。</p>
+<pre><code class="java">// 存在多个构造参数，不易读
+Date date0 = new Date();
+Date date1 = new Date(0L);
+Date date2 = new Date(&quot;0&quot;);
+Date date3 = new Date(1, 2, 1);
+Date date4 = new Date(1, 2, 1, 1, 1);
+Date date5 = new Date(1, 2, 1, 1, 1, 1);
+</code></pre>
+<p>代码引用：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/ceb5ec8f1174">关于 Java 的静态工厂方法，看这一篇就够了！</a></p>
+<h4 id="2、静态工厂方法可以控制单例"><a href="#2、静态工厂方法可以控制单例" class="headerlink" title="2、静态工厂方法可以控制单例"></a>2、静态工厂方法可以控制单例</h4><p>如果只需要对外提供一个实例，无需关心是否是新实例，可以使用静态工厂控制单例。</p>
+<pre><code class="java">public class SingletonItem &#123;
+
+    private int value;
+
+    private static SingletonItem singletonItem = null;
+
+    private SingletonItem() &#123;
+        this.value = new Random().nextInt(100);
+    &#125;
+
+    public static SingletonItem getInstance() &#123;
+        if (singletonItem != null) &#123;
+            return singletonItem;
+        &#125;
+        singletonItem = new SingletonItem();
+        return singletonItem;
+    &#125;
+
+    public int getValue() &#123;
+        return value;
+    &#125;
+
+    public void setValue(int value) &#123;
+        this.value = value;
+    &#125;
+&#125;
+</code></pre>
+<h4 id="3、可以返回原返回类型的子类型"><a href="#3、可以返回原返回类型的子类型" class="headerlink" title="3、可以返回原返回类型的子类型"></a>3、可以返回原返回类型的子类型</h4><p>构造方法只能返回确定的类型，静态工厂方法可以更加灵活的返回其子类型。</p>
+<pre><code class="java">// 使用静态工厂方法返回子类型
+public static Item newSubItem(float square) &#123;
+  SubItem subItem = new SubItem(square);
+  subItem.setName(&quot;test&quot;);
+  subItem.setWidth(0);
+  subItem.setLength(0);
+  return new SubItem(square);
+&#125;
+</code></pre>
+<h3 id="遇到多个构造器参数时要考虑用构建器"><a href="#遇到多个构造器参数时要考虑用构建器" class="headerlink" title="遇到多个构造器参数时要考虑用构建器"></a>遇到多个构造器参数时要考虑用构建器</h3><p>静态工厂方法和构造方法都有一个缺点：不能很好的扩展到大量可选参数。有时候可能一个类涉及到的可选构造参数比较多，针对每种情况编写一个构造器，工作量非常大而且代码很难控制，调用也需要传许多原本不需要的可选字段。这时候使用构建器就能很好的解决这个问题，因为构造器是通过方法实现的，因此还可以对传入的构造参数进行校验，如果传入的参数不满足约束条件，可以抛出 IllegalState Exception 异常，显示该参数违反了哪个约束条件。</p>
+<p>在内部类 Builder 中区分必须字段（final）和可选字段，并对其进行赋值，最后在 build 方法中返回需要的对象。</p>
+<pre><code class="java">public class Product &#123;
+
+    private final String name;
+
+    private final String desc;
+
+    private final float price1;
+
+    private final float price2;
+
+    public static class Builder &#123;
+
+        // 必须字段
+        private final String name;
+
+        // 可选字段
+        private String desc;
+
+        private float price1;
+
+        private float price2;
+
+        public Builder(String name) &#123;
+            if (name == null || name.length() &lt; 5 || name.length() &gt; 8) &#123;
+                throw new IllegalArgumentException(&quot;产品名称只能由 5 至 8 个字符组成&quot;);
+            &#125;
+            this.name = name;
+        &#125;
+
+        public Builder desc(String desc) &#123;
+            this.desc = desc;
+            return this;
+        &#125;
+
+        public Builder price1(float price) &#123;
+            this.price1 = price;
+            return this;
+        &#125;
+
+        public Builder price2(float price) &#123;
+            this.price2 = price;
+            return this;
+        &#125;
+
+        public Product build() &#123;
+            return new Product(this);
+        &#125;
+    &#125;
+
+    public Product(Builder builder) &#123;
+        if ((builder.price1 + builder.price2) &lt; 5) &#123;
+            throw new IllegalStateException(&quot;价格 1 与价格 2 总和不能小于 5&quot;);
+        &#125;
+        this.name = builder.name;
+        this.desc = builder.desc;
+        this.price1 = builder.price1;
+        this.price2 = builder.price2;
+    &#125;
+&#125;
+
+Product product = new Product.Builder(&quot;product1&quot;)
+                .desc(&quot;desc1&quot;)
+                .price1(1.01F)
+                .price2(2.01F)
+                .build();
+</code></pre>
+<p>使用构建器需要注意的点：</p>
+<ul>
+<li>为了创建对象必须先创建他的构建器，在某些注重性能的场景，要十分谨慎；</li>
+<li>确实存在很多参数时才使用，否则使用更常规的方式会更简洁；</li>
+<li>别等到字段扩展到很多时才使用，那时会导致旧的构造器和构建器混用，最好一开始就使用构建器。</li>
+</ul>
+<h3 id="用私有构造器和枚举强化-Singleton-类型"><a href="#用私有构造器和枚举强化-Singleton-类型" class="headerlink" title="用私有构造器和枚举强化 Singleton 类型"></a>用私有构造器和枚举强化 Singleton 类型</h3><p>Singleton：仅仅被实例化一次的类。</p>
+<p>1、使用私有构造创建 Singleton</p>
+<pre><code class="java">public class EnhanceSingleton &#123;
+
+    public static final EnhanceSingleton INSTANCE = new EnhanceSingleton();
+
+    private EnhanceSingleton() &#123;
+        System.out.println(&quot;new EnhanceSingleton&quot;);
+    &#125;
+
+    public static void main(String[] args) &#123;
+        EnhanceSingleton instance1 = EnhanceSingleton.INSTANCE;
+        EnhanceSingleton instance2 = EnhanceSingleton.INSTANCE;
+        System.out.println(instance1 == instance2);
+    &#125;
+&#125;
+
+// output
+new EnhanceSingleton
+true
+</code></pre>
+<p>2、使用静态工厂方法创建 Singleton</p>
+<pre><code class="java">public class EnhanceSingleton &#123;
+
+    private static final EnhanceSingleton INSTANCE = new EnhanceSingleton();
+
+    private EnhanceSingleton() &#123;
+        System.out.println(&quot;new EnhanceSingleton&quot;);
+    &#125;
+
+    public static EnhanceSingleton getInstance() &#123;
+        return INSTANCE;
+    &#125;
+
+    public static void main(String[] args) &#123;
+        EnhanceSingleton instance3 = EnhanceSingleton.getInstance();
+        EnhanceSingleton instance4 = EnhanceSingleton.getInstance();
+        System.out.println(instance3 == instance4);
+    &#125;
+&#125;
+</code></pre>
+<p>3、使用单个元素的枚举创建 Singleton</p>
+<p>单个元素的枚举类型是实现 Singleton 最佳方法。</p>
+<pre><code class="java">public enum TestEnum &#123;
+    INSTANCE;
+&#125;
+</code></pre>
+<h3 id="通过私有构造方法强化不可实例化的能力"><a href="#通过私有构造方法强化不可实例化的能力" class="headerlink" title="通过私有构造方法强化不可实例化的能力"></a>通过私有构造方法强化不可实例化的能力</h3><p>有时候编写一些只包含静态属性和静态方法的通用工具类或者常量类，这些类实例化没有意义，可以通过显示定义一个私有的构造方法覆盖默认构造方法阻止这些类被实例化。</p>
+<pre><code class="java">public class TestUtil &#123;
+
+    // 通过私有构造方法强化不可实例化的能力
+    private TestUtil() &#123;
+        throw new AssertionError(&quot;工具类不可实例化&quot;);
+    &#125;
+
+    public static String filterCharA(String str) &#123;
+        if (str == null || &quot;&quot;.equals(str)) &#123;
+            return str;
+        &#125;
+        return str.replaceAll(&quot;a&quot;, &quot;&quot;);
+    &#125;
+&#125;
+</code></pre>
+<h3 id="避免创造不必要的对象"><a href="#避免创造不必要的对象" class="headerlink" title="避免创造不必要的对象"></a>避免创造不必要的对象</h3><h4 id="1、字符串"><a href="#1、字符串" class="headerlink" title="1、字符串"></a>1、字符串</h4><blockquote>
+<p>一般来说，最好能重用对象而不是在每次需要的时候创建一个具有相同功能的新对象。</p>
+<p>如果对象是不可变的（Immutable），那么它始终可以被重用。</p>
+</blockquote>
+<p>反例: <code>String str = new String(&quot;hello world!&quot;);</code></p>
+<p>该语句每次执行的时候都会创建一个新的 String 实例，参数 “hello world!” 本身就是一个 String 实例，功能方面等同于构造器创建的所有对象。如果在循环中被调用，就会创建大量不必要的实例。</p>
+<p>正例: <code>String str = &quot;hello world!&quot;;</code></p>
+<h4 id="2、静态工厂方法优于构造器"><a href="#2、静态工厂方法优于构造器" class="headerlink" title="2、静态工厂方法优于构造器"></a>2、静态工厂方法优于构造器</h4><p><strong>对于同时提供静态工厂方法和构造器的不可变类，通常可以使用静态工厂方法而不是构造器，可以避免创建不必要的对象。</strong></p>
+<p>反例: <code>Boolean flag = new Boolean(&quot;true&quot;);</code></p>
+<p>正例: <code>Boolean flag = Boolean.valueOf(&quot;true&quot;);</code></p>
+<h4 id="3、静态属性"><a href="#3、静态属性" class="headerlink" title="3、静态属性"></a>3、静态属性</h4><p>已知不会被修改的对象也可以重用。</p>
+<pre><code class="java">public class AvoidNewObj &#123;
+
+    private Date birthDate;
+
+    public AvoidNewObj(Date birthDate) &#123;
+        this.birthDate = birthDate;
+    &#125;
+
+    // 每次调用都会创建不必要的 Calenda, TimeZone 实例
+    public boolean isBabyBoomer() &#123;
+        Calendar gmt = Calendar.getInstance(TimeZone.getTimeZone(&quot;GMT&quot;));
+        gmt.set(1946, Calendar.JANUARY, 1, 0, 0, 0);
+        Date startTime = gmt.getTime();
+        gmt.set(1965, Calendar.JANUARY, 1, 0, 0, 0);
+        Date endTime = gmt.getTime();
+        return birthDate.after(startTime) &amp;&amp; birthDate.before(endTime);
+    &#125;
+&#125;
+</code></pre>
+<pre><code class="java">public class AvoidNewObj1 &#123;
+
+    private static final Date startTime;
+
+    private static final Date endTime;
+
+    private Date birthDate;
+
+    // 只需要创建一次 Calendar，TimeZone 实例
+    static &#123;
+        Calendar gmt = Calendar.getInstance(TimeZone.getTimeZone(&quot;GMT&quot;));
+        gmt.set(1946, Calendar.JANUARY, 1, 0, 0, 0);
+        startTime = gmt.getTime();
+        gmt.set(1965, Calendar.JANUARY, 1, 0, 0, 0);
+        endTime = gmt.getTime();
+    &#125;
+
+    public AvoidNewObj1(Date birthDate) &#123;
+        this.birthDate = birthDate;
+    &#125;
+
+    public boolean isBabyBoomer() &#123;
+        return birthDate.after(startTime) &amp;&amp; birthDate.after(endTime);
+    &#125;
+&#125;
+</code></pre>
+<p>在同一个机器上循环调用 一千万次 isBabyBoomer() 方法，优化钱耗时 3600 毫秒，优化后耗时 330 毫秒，相差十倍左右。</p>
+<h4 id="4、基本类型与包装类"><a href="#4、基本类型与包装类" class="headerlink" title="4、基本类型与包装类"></a>4、基本类型与包装类</h4><p>优先使用基本类型而不是包装类，当心无意识的自动装箱。</p>
+<pre><code class="java">// 计算所有 int 值的和
+// 使用包装类耗时 6000 毫秒
+public static void sum() &#123;
+    Long sum = 0L;
+    for (int i = 0; i &lt; Integer.MAX_VALUE; i++) &#123;
+      sum += i;
+    &#125;
+&#125;
+</code></pre>
+<pre><code class="java">// 计算所有 int 值的和
+// 使用基本类型，耗时 630 毫秒
+public static void sum() &#123;
+    long startTime = System.currentTimeMillis();
+    long sum = 0L;
+    for (int i = 0; i &lt; Integer.MAX_VALUE; i++) &#123;
+      sum += i;
+    &#125;
+    long endTime = System.currentTimeMillis();
+    System.out.println(&quot;耗时(ms): &quot;);
+    System.out.println(endTime - startTime);
+&#125;
+</code></pre>
+<h3 id="消除过期的对象引用"><a href="#消除过期的对象引用" class="headerlink" title="消除过期的对象引用"></a>消除过期的对象引用</h3><h4 id="1、一个类自己管理内存容易导致内存泄漏"><a href="#1、一个类自己管理内存容易导致内存泄漏" class="headerlink" title="1、一个类自己管理内存容易导致内存泄漏"></a>1、一个类自己管理内存容易导致内存泄漏</h4><blockquote>
+<p>在支持垃圾回收的语言中，内存泄漏（无意识的对象保持）通常比较隐蔽。如果一个对象被无意识的保持下来，垃圾回收机制不仅不会处理这个对象，而且也不会处理这个对象所引用的其他对象。即便只有少量的对象被保持下来，也会导致许多对象被排除在垃圾回收之外，从而对性能造成影响。</p>
+<p>这类问题的修复很简单：如果该引用已过期，手动清空该引用。</p>
+</blockquote>
+<pre><code class="java">public Object pop() &#123;
+    if (size == 0) &#123;
+        throw new EmptyStackException();
+    &#125;
+    Object result = elements[--size];
+    // 引用过期时，手动清空该引用
+    elements[size] = null;
+    return result;
+&#125;
+</code></pre>
+<p>清空过期引用的另一个好处：如果以后又被错误的引用，程序会立即抛出异常，而不是悄悄的运行下去，可以提前检测出程序中的错误。</p>
+<p><strong>清空对象引用应该是一种例外，而不是一种规范，不需要过分小心。</strong></p>
+<h4 id="2、缓存容易导致内粗泄漏"><a href="#2、缓存容易导致内粗泄漏" class="headerlink" title="2、缓存容易导致内粗泄漏"></a>2、缓存容易导致内粗泄漏</h4><p>被放到缓存中的对象很容易被遗忘，从而导致对象过期相当长的一段时间，依然被保留在缓存中。</p>
+<p>解决方案：</p>
+<ol>
+<li>使用 WeakHashMap；</li>
+<li>每次添加新条目的同时，对超期或者无用的引用进行清理；</li>
+<li>交给后台线程（Timer 或者 ScheduledThreadPoolExecutor）完成。</li>
+</ol>
+<h2 id="ch3-对于所有对象都通用的方法"><a href="#ch3-对于所有对象都通用的方法" class="headerlink" title="ch3 对于所有对象都通用的方法"></a>ch3 对于所有对象都通用的方法</h2><blockquote>
+<p>尽管 Object 类是一个具体的类，但是设计它主要是为了扩展，它的所有非 final 方法 (equals(), hashCode(), toString(), clone() 和 finalize()) 都有明确的通用约定，它们被设计成要被覆盖的。如果覆盖这些方法的时候不遵守通用约定，那么对于其他依赖这些约定的类结合该类就不能正常工作。</p>
+</blockquote>
+<h3 id="覆盖-equals-的时候请遵守通用约定"><a href="#覆盖-equals-的时候请遵守通用约定" class="headerlink" title="覆盖 equals 的时候请遵守通用约定"></a>覆盖 equals 的时候请遵守通用约定</h3><h4 id="不需要覆盖-equals-方法的场景"><a href="#不需要覆盖-equals-方法的场景" class="headerlink" title="不需要覆盖 equals 方法的场景"></a>不需要覆盖 equals 方法的场景</h4><p>equals() 方法看起来简单，但是许多覆盖方式会导致很多意想不到的严重错误，最容易避免这类问题的方法就是不覆盖该方法，在这种情况下，类的每个实例都只与它自身相等。</p>
+<ol>
+<li>类的每个实例本质上都是唯一的；</li>
+<li>不关心实例的逻辑相等；</li>
+<li>超类已经覆盖了 equals 方法，从超类继承过来的行为对于子类也是适用的；</li>
+<li>equals 用于不会被调用。</li>
+</ol>
+<p>如果类有自己想等的概念，并且父类没有实现相应的 equals 方法时，就需要进行覆盖。</p>
+<p>如果实例是受控实例，如静态工厂方法控制的实例，最多只存在一个对象时，值相等与对象相等是同一个概念，这时不需要覆盖 equals 方法。</p>
+<p>覆盖 equals 方法的通用约定：</p>
+<ol>
+<li>自反性；</li>
+<li>对称性；</li>
+<li>传递性；</li>
+<li>一致性；</li>
+<li>对于任何非 null 引用值 x，x.equals(null) 必须返回 false。</li>
+</ol>
+<h4 id="如何覆盖-equals-方法"><a href="#如何覆盖-equals-方法" class="headerlink" title="如何覆盖 equals 方法"></a>如何覆盖 equals 方法</h4><ol>
+<li><p>使用 &#x3D;&#x3D; 检查参数是否为该对象的引用；</p>
+</li>
+<li><p>使用 instanceof 判断参数是否是正确的类型（包含了参数为 null 的判断）；</p>
+</li>
+<li><p>将参数转换成正确的类型；</p>
+</li>
+<li><p>逐个检查对象的关键属性，如果全部通过，返回 true ，否则返回 false；</p>
+<p>对于既不是 float 又不是 double 的基本类型，可以使用 &#x3D;&#x3D; 进行比较。对于引用属性，可以递归调用 equals。如果是 float 或者是 double 类型，可以使用 Double.compare() 和 Float.compare() 进行比较。</p>
+</li>
+<li><p>编写完 equals 方法之后，重新审视 对称性、传递性和一致性。</p>
+<p>最好编写单元测试进行检验。</p>
+</li>
+</ol>
+<h4 id="覆盖-equals-方法的一些告诫"><a href="#覆盖-equals-方法的一些告诫" class="headerlink" title="覆盖 equals 方法的一些告诫"></a>覆盖 equals 方法的一些告诫</h4><ol>
+<li>覆盖 equals 方法时总是要同时覆盖 hashCode() 防范；</li>
+<li>不要企图让 equals 方法过于智能；</li>
+<li>不要将 equals 方法中的参数声明外 Object 之外的类型。</li>
+</ol>
+<h3 id="覆盖-equals-方法时总是要覆盖-hashCode"><a href="#覆盖-equals-方法时总是要覆盖-hashCode" class="headerlink" title="覆盖 equals 方法时总是要覆盖 hashCode"></a>覆盖 equals 方法时总是要覆盖 hashCode</h3><p>一个很常见的错误在于没有覆盖 hashCode 方法。覆盖 equals 时一定要覆盖 hashCode，否则就会违反 Object.hashCode 的通用规则，从而导致该类无法结合所有基于散列的集合一起正常运作，包括 HashMap、HashSet、HashTable。</p>
+<p>📃 hashCode 规范：</p>
+<ul>
+<li>在应用程序执行期间，只要对象的 equals 方法的比较操作所用到的信息没有被修改，那么对这个对象调用多次，hashCode 方法都必须始终返回同一个整数；</li>
+<li>如果两个对象根据 equals 方法是相等的，那么这两个对象 hashCode 也必须一致；</li>
+<li>如果两个对象根据 equals 方法是不相等的，则 hashCode 值不一定要相等；但是不相等的对象产生不同的 hashCode，可以提高散列表的性能。</li>
+</ul>
+<pre><code class="java">public class PhoneNumber &#123;
+
+    private final short areaCode;
+
+    private final short prefix;
+
+    private final short lineNumber;
+
+    public PhoneNumber(int areaCode, int prefix, int lineNumber) &#123;
+        this.areaCode = (short) areaCode;
+        this.prefix = (short) prefix;
+        this.lineNumber = (short) lineNumber;
+    &#125;
+
+    // 覆盖 equals 方法但是未覆盖 hashCode 方法
+    @Override
+    public boolean equals(Object o) &#123;
+        if (this == o) &#123;
+            return true;
+        &#125;
+        if (!(o instanceof PhoneNumber)) &#123;
+            return false;
+        &#125;
+        PhoneNumber that = (PhoneNumber) o;
+        return areaCode == that.areaCode
+                &amp;&amp; prefix == that.prefix
+                &amp;&amp; lineNumber == that.lineNumber;
+    &#125;
+&#125;
+</code></pre>
+<pre><code class="java">Map&lt;PhoneNumber, String&gt; map = new HashMap&lt;&gt;();
+PhoneNumber phoneNumber = new PhoneNumber(1, 2, 3);
+map.put(phoneNumber, &quot;tony&quot;);
+
+// hashCode: 356573597
+System.out.println(&quot;hashCode: &quot; + phoneNumber.hashCode());
+
+PhoneNumber phoneNumber1 = new PhoneNumber(1, 2, 3);
+// hashCode: 1735600054
+System.out.println(&quot;hashCode: &quot; + phoneNumber1.hashCode());
+// 获取值
+String name = map.get(phoneNumber1);
+// return false
+// name: false
+System.out.println(&quot;name: &quot; + &quot;tony&quot;.equals(name));
+</code></pre>
+<p>虽然覆盖了 equals 方法，但是未覆盖 hashCode，三个属性相同的两个对象 equals 返回相等，hashCode 却是不相等的，违反了 hashCode 约定的第二点。在 HashMap 中因为有不同的 hashCode，所以返回结果不是 “tony” 而是 null。</p>
+<p>覆盖 hashCode 方法可以解决上述问题。而且散列函数对散列表的性能影响很大，因此理想的散列函数，应当能将集合中不相等的实例均匀的分布到所有的散列值上。</p>
+<p>📝 编写散列函数的方法：</p>
+<ol>
+<li>确定一个非零常数值（17），保存到 result 的 int 类型变量中；</li>
+<li>对于对象中的每个域 f:<ol>
+<li>计算该域的散列值 c: <ol>
+<li>boolean类型: f ? 1 : 0</li>
+<li>byte short int: (int) f</li>
+<li>long: (int) (f ^ (f &gt;&gt;&gt; 32))</li>
+<li>float: Float.floatToIntBits(f)</li>
+<li>double: Double.doubleToLongBits(f)</li>
+<li>对象引用: 递归调用 hashCode</li>
+<li>数组: 对每个元素当作单独的域来处理</li>
+</ol>
+</li>
+<li>计算 result &#x3D; 31 * result + c</li>
+</ol>
+</li>
+<li>返回 result</li>
+<li>编写单元测试用例，测试 <strong>相等的实例拥有相等的散列码。</strong></li>
+</ol>
+<p>⚠️ 注意点：</p>
+<ul>
+<li>必须排除 equals 中未使用的域</li>
+<li>如果计算散列值开销较大，对于不变类，可以考虑缓存散列码；</li>
+<li>让 hashCode 返回一个确定的数值并不是明智的做法，会限制将来改进散列函数的能力。</li>
+</ul>
+<h3 id="始终要覆盖-toString"><a href="#始终要覆盖-toString" class="headerlink" title="始终要覆盖 toString"></a>始终要覆盖 toString</h3><p>✅ 建议所有子类覆盖 toString 方法。</p>
+<p>提供好的 toString 实现可以使类用起来更加舒适，对于调试有好处。toString 方法应该返回所有值得关注的域。</p>
+<h3 id="谨慎的覆盖-clone"><a href="#谨慎的覆盖-clone" class="headerlink" title="谨慎的覆盖 clone"></a>谨慎的覆盖 clone</h3><blockquote>
+<p>Cloneable 接口的目的是作为对象的一个 mixin 接口，表明这样的对象允许拷贝。遗憾的是，它没有达到这个目的，因为它缺少一个 clone 方法。Object 类的 clone 方法是受保护的，如果不借助反射，就不能仅仅因为一个类实现了 Cloneable 接口，就可以调用 clone 方法，即使使用反射，也有可能失败，因为不能保证该对象具有可访问的 clone 方法。</p>
+</blockquote>
+<pre><code class="java">// Object 类中受保护的 clone() 方法
+protected native Object clone() throws CloneNotSupportedException;
+</code></pre>
+<pre><code class="java">// Cloneable 接口
+public interface Cloneable &#123;
+&#125;
+</code></pre>
+<p>既然 Cloneable 没有包含任何方法，那它的作用是什么呢？它决定了 Object 类中受保护的 clone 方法的实现的行为，如果一个类实现了 Cloneable 接口，Object 类中的 clone 方法就返回该对象逐域拷贝，<strong>否则直接抛出 java.lang.CloneNotSupportedException 异常</strong>。</p>
+<p><em>通常实现接口的目的，是为了表明类可以为它的客户做些什么。然而对于 Cloneable 接口，它改变了超类中受保护的方法的行为。</em></p>
+<p>无需调用构造器就可以创建对象。</p>
+<p>clone 方法的通用约定：</p>
+<ul>
+<li>x.clone() !&#x3D; x 为 true</li>
+<li>x.clone.getClass() &#x3D;&#x3D; x.getClass 为true</li>
+</ul>
+<p>但是这些都不是绝对的要求。</p>
+<p>实现了 Cloneable 接口的类，都应该提供一个公有的 clone 方法，此方法内部先调用 super.clone() ，然后修正任何需要修正的域。一般情况下，这意味着要拷贝任何包含内部<strong>深层结构</strong>的可变对象，并用指向新对象的引用代替原来指向这些对象的引用。</p>
+<pre><code class="java">@Override
+public Company clone() throws CloneNotSupportedException &#123;
+  Company clone = (Company) super.clone();
+  clone.numbers = numbers.clone();
+  return clone;
+&#125;
+</code></pre>
+<p>另一个实现对象拷贝的好办法是提供一个拷贝构造器或拷贝工厂。拷贝构造器的唯一参数为该构造器的类，比如 new TreeSet&lt;&gt;() 。</p>
+<pre><code class="java">public Company newInstance() &#123;
+    return new Company(name, numbers);
+&#125;
+</code></pre>
+<p>拷贝构造器及静态工厂方法相对于 clone 的好处：</p>
+<ol>
+<li>不用遵守约定；</li>
+<li>不会与 final 域冲突；</li>
+<li>不会抛出不受检查的异常；</li>
+<li>不需要进行类型转换。</li>
+</ol>
+<p>建议：<strong>不应该扩展、实现 Cloneable 接口，也不应该覆盖、调用 clone 方法。</strong></p>
+<h3 id="考虑实现-Comparable-接口"><a href="#考虑实现-Comparable-接口" class="headerlink" title="考虑实现 Comparable 接口"></a>考虑实现 Comparable 接口</h3><p>compareTo 方法是 Comparable 接口中唯一的方法，且是一个范型方法。一个类实现了 Comparable 接口，则表明它的实例具有内在的排序关系（大小、状态等）。而且，实现 Comparable 接口之后，它就可以和许多范型算法以及依赖于该接口实现的集合进行协作，付出很小的努力就可以获得强大的功能。Java 平台类库中所有值类都实现了这个接口。如果你正在编写一个值类，其具有明显的内在排序关系，比如按字母、数值、年代等排序，则应坚决考虑实现这个接口。</p>
+<pre><code class="java">public interface Comparable&lt;T&gt; &#123;
+&#125;
+</code></pre>
+<p>编写 compareTo 方法与编写 equals 方法不同之处：Comparable 接口是范型接口，而且是静态类型，因此不必进行类型检查，也不用进行类型转换。如果参数为 null，则会抛出 NullPointerException。</p>
+<p>compareTo 方法是对于顺序的比较，比较对象引用域可以通过递归调用 compareTo 方法实现。比较整形基本类型数据，可以使用 &lt; 或 &gt; 来实现；比较浮点数可以使用 Double.compareTo 或 Float.compareTo 来实现；对于数组，则要对每个元素进行比较。</p>
+<pre><code class="java">public class Task implements Comparable&lt;Task&gt; &#123;
+
+    public static List&lt;String&gt; TASK_STATUS_LIST = Arrays.asList(&quot;草稿&quot;, &quot;待审批&quot;, &quot;审批通过&quot;, &quot;归档&quot;);
+
+    private String name;
+
+    private String taskStatus;
+
+    public Task(String name, String taskStatus) &#123;
+        this.name = name;
+        this.taskStatus = taskStatus;
+    &#125;
+
+    @Override
+    public String toString() &#123;
+        return &quot;Task&#123;&quot; +
+                &quot;name=&#39;&quot; + name + &#39;\&#39;&#39; +
+                &quot;, taskStatus=&#39;&quot; + taskStatus + &#39;\&#39;&#39; +
+                &#39;&#125;&#39;;
+    &#125;
+
+    @Override
+    public int compareTo(Task o) &#123;
+        int index = getStatusIndex(this);
+        int index1 = getStatusIndex(o);
+        return Integer.compare(index, index1);
+    &#125;
+
+    private static int getStatusIndex(Task task) &#123;
+        for (int i = 0; i &lt; TASK_STATUS_LIST.size(); i++) &#123;
+            if (TASK_STATUS_LIST.get(i).equals(task.getTaskStatus())) &#123;
+                return i;
+            &#125;
+        &#125;
+
+        System.out.println(&quot;任务状态不合法&quot;);
+        return 99;
+    &#125;
+&#125;
+
+// data
+Task task1 = new Task(&quot;task1&quot;, &quot;草稿&quot;);
+Task task2 = new Task(&quot;task2&quot;, &quot;待审批&quot;);
+Task task3 = new Task(&quot;task3&quot;, &quot;审批通过&quot;);
+Task task4 = new Task(&quot;task4&quot;, &quot;归档&quot;);
+Task task5 = new Task(&quot;task5&quot;, &quot;其他&quot;);
+
+// output
+[task1 -&gt; 草稿]
+
+[task2 -&gt; 待审批]
+
+[task3 -&gt; 审批通过]
+
+[task4 -&gt; 归档]
+
+[task5 -&gt; 其他]
+</code></pre>
+<p>因为 compareTo 方法没有指定返回值的大小，只是指定了符号，因此可以利用这一点简化对多个域进行比较时的代码。但是使用这种方法时，要特别考虑结果溢出的情况，溢出会导致 compareTo 返回错误的结果，并且这样的错误很难调试。</p>
+<h2 id="ch4-类和接口"><a href="#ch4-类和接口" class="headerlink" title="ch4 类和接口"></a>ch4 类和接口</h2><h3 id="使类和成员的可访问性最小化"><a href="#使类和成员的可访问性最小化" class="headerlink" title="使类和成员的可访问性最小化"></a>使类和成员的可访问性最小化</h3><p>信息隐藏可以使各系统各模块之间解耦，使得这些模块可以独立的开发、测试、优化和使用。</p>
+<p>信息隐藏的规则：</p>
+<ol>
+<li><p>尽可能的使每个类或成员不被外界访问；</p>
+</li>
+<li><p>实例域绝不能公有；如果域是非 final 的，或者指向可变对象的 final 引用，这个域一旦公有，将对它失去控制。静态域也不能公有，除非要通过 public static final 来暴露一些常量。通常用大写字母加上下划线来表示，很重要的一点是，这些域要么是包含基本类型的值，要么指向不可变对象的引用。如果 final 域包含可变对象的引用，它便具有非 final 域所有的缺点。虽然引用本身不能被修改，但是引用它引用的对象却是可以被修改的。</p>
+<p><strong>长度非 0 的数组总是可变的。</strong>所以，具有 public static final 数组域，或者返回这种域的访问方法，几乎总是错误的！因为这种域可以被任意修改。</p>
+<pre><code class="java">public static String[] TASK_STATUS_LIST = &#123;&quot;草稿&quot;, &quot;待审批&quot;, &quot;审批通过&quot;, &quot;归档&quot;&#125;;
+
+// 修改长度非 0 的公有静态数组域
+Task.TASK_STATUS_LIST[0] = &quot;修改后的内容&quot;;
+
+// 解决方案1
+// 将公有变为私有，并增加一个公有的不可变列表
+private static String[] TASK_STATUS_LIST = &#123;&quot;草稿&quot;, &quot;待审批&quot;, &quot;审批通过&quot;, &quot;归档&quot;&#125;;
+public static String[] getTaskStatusList() &#123;
+    return Collections.unmodifiableList(TASK_STATUS_LIST);
+&#125;
+
+// 解决方案2
+// 将数组变为私有，并且添加一个公有方法，返回一个数组的备份
+public static String[] getTaskStatusList() &#123;
+    return TASK_STATUS_LIST.clone();
+&#125;
+</code></pre>
+</li>
+</ol>
+<p>总而言之：<strong>应当始终降低可访问性且防止将散乱的类、接口或成员变成 API 的一部分，除了公有静态 final 域特殊情况外，公有类不应包含公有域，并且要确保公有静态 final 引用的对象都是不可变的。</strong></p>
+<h3 id="在公有类中使用公有方法而非公有域"><a href="#在公有类中使用公有方法而非公有域" class="headerlink" title="在公有类中使用公有方法而非公有域"></a>在公有类中使用公有方法而非公有域</h3><p>有时候可能会编写一些退化类，这种类仅仅用来集中实例域。</p>
+<pre><code class="java">public class Point &#123;
+
+    public double x;
+    
+    public double y;
+&#125;
+</code></pre>
+<p>由于这种类的数据域是直接可以访问的，这些类没有提供封装 API 的功能，如果不改变 API，就无法改变的它的数据表示法，也无法强加任何约束条件，当域被访问的时候，无法采取任何辅助措施。这种类应该用私有域和公有访问方法来代替，getter 和 setter 方法。</p>
+<h3 id="使可变形最小"><a href="#使可变形最小" class="headerlink" title="使可变形最小"></a>使可变形最小</h3><p>不可变类只是其实例不可被修改的类。每个实例包含的所有信息必须在<strong>创建该实例的时候就提供</strong>，并在对象的整改生命周期内固定不变。Java 平台内的不可变类：String、基本类型的包装类、BigInteger 和 BigDecimal 类。存在许多不可变的类的理由：易于设计、实现和使用，而且更加安全。</p>
+<p>为了使类成为不可变类，需要遵循 5 条规则：</p>
+<ol>
+<li>不要提供任何会修改对象状态的方法；</li>
+<li>保证类不会被扩展（一般使用 final ）；</li>
+<li>所有域都是 final 的；</li>
+<li>所有域都是私有的（防止被引用的可变对象）；</li>
+<li>确保任何可变组件的互斥访问（如果类具有指向可变对象的域，则必须确保该类的客户端无法获得指向这些对象的引用）。</li>
+</ol>
+<h3 id="复合优于继承"><a href="#复合优于继承" class="headerlink" title="复合优于继承"></a>复合优于继承</h3><p>封装、继承、多态是面向对象的三个基本特征。继承运行在不改变原有类的情况下，对其进行扩展，是实现代码重用的强有力手段。</p>
+<p>在包内使用继承是安全的，因为继承和实现处于同一个程序员的控制之下。但是对于普通类（不是专门为了继承而设计的类）进行进行跨包边界继承则是非常危险的。</p>
+<p><strong>继承打破了封装性</strong>。子类的实现依赖于基类的实现细节，如果基类的实现细节发生变更，则子类可能会完全遭到破坏，即使子类做任何更改。</p>
+<p>一个继承 HashSet 类的例子，添加了一个域 addCount 记录添加元素的个数：</p>
+<pre><code class="java">public class MyHashSet&lt;E&gt; extends HashSet&lt;E&gt; &#123;
+
+    private int addCount;
+
+    @Override
+    public boolean add(E e) &#123;
+        this.addCount++;
+        return super.add(e);
+    &#125;
+
+    @Override
+    public boolean addAll(Collection&lt;? extends E&gt; c) &#123;
+        this.addCount += c.size();
+        return super.addAll(c);
+    &#125;
+&#125;
+</code></pre>
+<p>在该类中覆盖了 HashSet 中的 add 和 addAll 方法，看似没有什么问题，但是通过测试发现这个类是有问题的，先执行 add 然后执行 addAll 后返回的 addCount 不正确。</p>
+<p>因为 HashSet 中，addAll 方法是调用 add 方法来执行添加操作的，所以调用 addAll 之后又对每个元素执行 add 操作，因此 addCount 会返回错误的值。</p>
+<p>只要删除 MyHashSet 类中的 addAll 方法就可以修复这个问题，直接调用 HashSet 类的 addAll 方法，但是它的正确性依然依赖于 addAll 是在 add 之上实现这种事实，可能别的平台的实现方式并非如此，可能将来 HashSet 类会修改这个实现方式，这些情况下都会导致该类出错，总之，这个类非常脆弱！</p>
+<p>还有一种方式就是覆盖 addAll 方法，自己实现 addAll 方法，循环 addAll 的参数集合，循环调用 add 方法。这种情况下相当于重新实现了超类的方法，如果有子类无法访问的私有域，有些方法就无法实现。</p>
+<p>导致子类脆弱还有一个原因就是基类可能在后续的版本获得新方法，则可能仅仅由于调用了未被子类覆盖的新方法而导致错误。</p>
+<p>如果在扩展一个类的时候，仅仅是添加新的方法，而不去覆盖原有的方法，可能是比较安全的做法。但是如果后续版本中基类新增了一个和子类同名同参数但是不同返回类型的方法，则会导致子类无法通过编译。</p>
+<p>复合可以很好的解决以上的问题。在新的类中增加一个私有域引用到现有类的实例，新类中的每个实例方法都可以调用现有类的方法并得到其结果，这种类非常稳固，因为其不依赖于现有类的实现细节，即使现有的类增加了新的方法，也不会影响到新的类。</p>
+<pre><code class="java">public class MyHashSet1&lt;E&gt; &#123;
+
+    private int addCount;
+
+    // 新的类新增私有域引用到现有类的实例
+    private HashSet&lt;E&gt; hashSet = new HashSet&lt;&gt;();
+
+    public boolean add(E e) &#123;
+        this.addCount++;
+        return this.hashSet.add(e);
+    &#125;
+
+    public boolean addAll(Collection&lt;? extends E&gt; c) &#123;
+        this.addCount += c.size();
+        return this.hashSet.addAll(c);
+    &#125;
+&#125;
+</code></pre>
+<p>只有当子类型真正是超类的子类型时使用继承才是恰当的。即便如此，如果子类和超类处在不同的包中，并且超类并不是为了继承而设计的，那么继承也将导致脆弱性。为了避免这种情况，可以使用复合和转发机制代替继承。</p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="utterances_thread">
+            <noscript>加载评论需要在浏览器启用 JavaScript 脚本支持。</noscript>
+        </div>
+    </div>
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/friends/">友链</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ch2-%E5%88%9B%E5%BB%BA%E5%92%8C%E9%94%80%E6%AF%81%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.</span> <span class="toc-text">ch2 创建和销毁对象</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%80%83%E8%99%91%E4%BD%BF%E7%94%A8%E9%9D%99%E6%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E4%BB%A3%E6%9B%BF%E6%9E%84%E9%80%A0%E5%99%A8"><span class="toc-number">1.1.</span> <span class="toc-text">考虑使用静态工厂方法代替构造器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E9%9D%99%E6%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E7%9B%B8%E6%AF%94%E6%9E%84%E9%80%A0%E6%96%B9%E6%B3%95%E6%9D%A5%E8%AF%B4%EF%BC%8C%E5%8F%AF%E4%BB%A5%E6%8C%87%E5%AE%9A%E5%90%8D%E7%A7%B0%EF%BC%9B"><span class="toc-number">1.1.1.</span> <span class="toc-text">1、静态工厂方法相比构造方法来说，可以指定名称；</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E9%9D%99%E6%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E5%8F%AF%E4%BB%A5%E6%8E%A7%E5%88%B6%E5%8D%95%E4%BE%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text">2、静态工厂方法可以控制单例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E5%8F%AF%E4%BB%A5%E8%BF%94%E5%9B%9E%E5%8E%9F%E8%BF%94%E5%9B%9E%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%AD%90%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.1.3.</span> <span class="toc-text">3、可以返回原返回类型的子类型</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%87%E5%88%B0%E5%A4%9A%E4%B8%AA%E6%9E%84%E9%80%A0%E5%99%A8%E5%8F%82%E6%95%B0%E6%97%B6%E8%A6%81%E8%80%83%E8%99%91%E7%94%A8%E6%9E%84%E5%BB%BA%E5%99%A8"><span class="toc-number">1.2.</span> <span class="toc-text">遇到多个构造器参数时要考虑用构建器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E7%A7%81%E6%9C%89%E6%9E%84%E9%80%A0%E5%99%A8%E5%92%8C%E6%9E%9A%E4%B8%BE%E5%BC%BA%E5%8C%96-Singleton-%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.3.</span> <span class="toc-text">用私有构造器和枚举强化 Singleton 类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E7%A7%81%E6%9C%89%E6%9E%84%E9%80%A0%E6%96%B9%E6%B3%95%E5%BC%BA%E5%8C%96%E4%B8%8D%E5%8F%AF%E5%AE%9E%E4%BE%8B%E5%8C%96%E7%9A%84%E8%83%BD%E5%8A%9B"><span class="toc-number">1.4.</span> <span class="toc-text">通过私有构造方法强化不可实例化的能力</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%BF%E5%85%8D%E5%88%9B%E9%80%A0%E4%B8%8D%E5%BF%85%E8%A6%81%E7%9A%84%E5%AF%B9%E8%B1%A1"><span class="toc-number">1.5.</span> <span class="toc-text">避免创造不必要的对象</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-number">1.5.1.</span> <span class="toc-text">1、字符串</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E9%9D%99%E6%80%81%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E4%BC%98%E4%BA%8E%E6%9E%84%E9%80%A0%E5%99%A8"><span class="toc-number">1.5.2.</span> <span class="toc-text">2、静态工厂方法优于构造器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%E3%80%81%E9%9D%99%E6%80%81%E5%B1%9E%E6%80%A7"><span class="toc-number">1.5.3.</span> <span class="toc-text">3、静态属性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%E3%80%81%E5%9F%BA%E6%9C%AC%E7%B1%BB%E5%9E%8B%E4%B8%8E%E5%8C%85%E8%A3%85%E7%B1%BB"><span class="toc-number">1.5.4.</span> <span class="toc-text">4、基本类型与包装类</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E9%99%A4%E8%BF%87%E6%9C%9F%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%BC%95%E7%94%A8"><span class="toc-number">1.6.</span> <span class="toc-text">消除过期的对象引用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E4%B8%80%E4%B8%AA%E7%B1%BB%E8%87%AA%E5%B7%B1%E7%AE%A1%E7%90%86%E5%86%85%E5%AD%98%E5%AE%B9%E6%98%93%E5%AF%BC%E8%87%B4%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F"><span class="toc-number">1.6.1.</span> <span class="toc-text">1、一个类自己管理内存容易导致内存泄漏</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E7%BC%93%E5%AD%98%E5%AE%B9%E6%98%93%E5%AF%BC%E8%87%B4%E5%86%85%E7%B2%97%E6%B3%84%E6%BC%8F"><span class="toc-number">1.6.2.</span> <span class="toc-text">2、缓存容易导致内粗泄漏</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ch3-%E5%AF%B9%E4%BA%8E%E6%89%80%E6%9C%89%E5%AF%B9%E8%B1%A1%E9%83%BD%E9%80%9A%E7%94%A8%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">ch3 对于所有对象都通用的方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A6%86%E7%9B%96-equals-%E7%9A%84%E6%97%B6%E5%80%99%E8%AF%B7%E9%81%B5%E5%AE%88%E9%80%9A%E7%94%A8%E7%BA%A6%E5%AE%9A"><span class="toc-number">2.1.</span> <span class="toc-text">覆盖 equals 的时候请遵守通用约定</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E9%9C%80%E8%A6%81%E8%A6%86%E7%9B%96-equals-%E6%96%B9%E6%B3%95%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-number">2.1.1.</span> <span class="toc-text">不需要覆盖 equals 方法的场景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E8%A6%86%E7%9B%96-equals-%E6%96%B9%E6%B3%95"><span class="toc-number">2.1.2.</span> <span class="toc-text">如何覆盖 equals 方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A6%86%E7%9B%96-equals-%E6%96%B9%E6%B3%95%E7%9A%84%E4%B8%80%E4%BA%9B%E5%91%8A%E8%AF%AB"><span class="toc-number">2.1.3.</span> <span class="toc-text">覆盖 equals 方法的一些告诫</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A6%86%E7%9B%96-equals-%E6%96%B9%E6%B3%95%E6%97%B6%E6%80%BB%E6%98%AF%E8%A6%81%E8%A6%86%E7%9B%96-hashCode"><span class="toc-number">2.2.</span> <span class="toc-text">覆盖 equals 方法时总是要覆盖 hashCode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A7%8B%E7%BB%88%E8%A6%81%E8%A6%86%E7%9B%96-toString"><span class="toc-number">2.3.</span> <span class="toc-text">始终要覆盖 toString</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B0%A8%E6%85%8E%E7%9A%84%E8%A6%86%E7%9B%96-clone"><span class="toc-number">2.4.</span> <span class="toc-text">谨慎的覆盖 clone</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%80%83%E8%99%91%E5%AE%9E%E7%8E%B0-Comparable-%E6%8E%A5%E5%8F%A3"><span class="toc-number">2.5.</span> <span class="toc-text">考虑实现 Comparable 接口</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ch4-%E7%B1%BB%E5%92%8C%E6%8E%A5%E5%8F%A3"><span class="toc-number">3.</span> <span class="toc-text">ch4 类和接口</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%B1%BB%E5%92%8C%E6%88%90%E5%91%98%E7%9A%84%E5%8F%AF%E8%AE%BF%E9%97%AE%E6%80%A7%E6%9C%80%E5%B0%8F%E5%8C%96"><span class="toc-number">3.1.</span> <span class="toc-text">使类和成员的可访问性最小化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8%E5%85%AC%E6%9C%89%E7%B1%BB%E4%B8%AD%E4%BD%BF%E7%94%A8%E5%85%AC%E6%9C%89%E6%96%B9%E6%B3%95%E8%80%8C%E9%9D%9E%E5%85%AC%E6%9C%89%E5%9F%9F"><span class="toc-number">3.2.</span> <span class="toc-text">在公有类中使用公有方法而非公有域</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E5%8F%AF%E5%8F%98%E5%BD%A2%E6%9C%80%E5%B0%8F"><span class="toc-number">3.3.</span> <span class="toc-text">使可变形最小</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%90%88%E4%BC%98%E4%BA%8E%E7%BB%A7%E6%89%BF"><span class="toc-number">3.4.</span> <span class="toc-text">复合优于继承</span></a></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&text=effective java"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&title=effective java"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&is_video=false&description=effective java"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=effective java&body=Check out this article: https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&title=effective java"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&title=effective java"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&title=effective java"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&title=effective java"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&name=effective java&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2022/07/26/5a7d26b642c6/&t=effective java"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    <!-- Copyright --> &copy;
+    
+    
+    2018-2024
+    lozhu
+  </div>
+  
+    <div>
+      <a href="https://icp.gov.moe/?keyword=20249900" target="_blank">萌ICP备 20249900 号</a>
+    </div>
+  
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?8bdf047ae0a66729bd3b27e8bb56fe11";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      </script>
+
+<!-- 51la Analytics -->
+
+  <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+  <script>
+  LA.init({
+      id: '3I0QIERSX42bDzDc',
+      ck: '3I0QIERSX42bDzDc'
+  })
+  </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+    <script type="text/javascript">
+      var utterances_repo = 'lozhu20/my-blog-comments';
+      var utterances_issue_term = 'pathname';
+      var utterances_label = 'Comment';
+      var utterances_theme = 'github-light';
+
+      (function(){
+          var script = document.createElement('script');
+
+          script.src = 'https://utteranc.es/client.js';
+          script.setAttribute('repo', utterances_repo);
+          script.setAttribute('issue-term', 'pathname');
+          script.setAttribute('label', utterances_label);
+          script.setAttribute('theme', utterances_theme);
+          script.setAttribute('crossorigin', 'anonymous');
+          script.async = true;
+          (document.getElementById('utterances_thread')).appendChild(script);
+      }());
+  </script>
+
+<!-- image modal -->
+<script>
+  (function() {
+    var contentNode = document.getElementsByClassName('content e-content');
+    if (!contentNode || contentNode.length === 0) {
+      console.log('no content, exit');
+      return;
+    }
+
+    var imgsNodes = contentNode[0].getElementsByTagName('img');
+    if (!imgsNodes || imgsNodes.length === 0) {
+      console.log('no image, exit');
+      return;
+    }
+
+    var span = document.getElementById('modal_close_btn');
+    span.onclick = function() { 
+      modal.style.display = "none";
+    };
+
+    var modal = document.getElementById('modal');
+    var modalImage = document.getElementById('modal_image');
+    var captionText = document.getElementById('caption');
+
+    for (var i = imgsNodes.length - 1; i >= 0; i--) {
+      let image = imgsNodes[i];
+      image.onclick = function() {
+        modal.style.display = "block";
+        modalImage.src = this.src;
+        captionText.innerHTML = this.alt || "文章配图";
+      };
+    }
+  }());
+</script>
+
+</body>
+</html>

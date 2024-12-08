@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="baidu-site-verification" content="codeva-OBV0UPgBod" />
+    <meta name="msvalidate.01" content="B9019CE3751A15D63E78AF8679980069" />
+    <meta name="description" content="创建线程的两种方式：  继承Thread类； 实现Runnable接口。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java多线程学习笔记">
+<meta property="og:url" content="https://lozhu.happy365.day/2020/10/08/00e11830a793/index.html">
+<meta property="og:site_name" content="Lozhu&#39;s blog">
+<meta property="og:description" content="创建线程的两种方式：  继承Thread类； 实现Runnable接口。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-10-08T08:26:13.000Z">
+<meta property="article:modified_time" content="2024-12-08T06:50:57.171Z">
+<meta property="article:author" content="lozhu">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Java多线程学习笔记</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XMGS491MQF"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XMGS491MQF');
+  </script>
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Lozhu's blog" type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="modal" class="modal">
+  <span id="modal_close_btn" class="modal-close-btn">x</span>
+  <img id="modal_image" class="modal-image">
+  <!-- <div id="caption"></div> -->
+</div>
+
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2020/10/09/cde85a939b5c/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2020/09/30/e7b4fbbe1cc4/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2020/10/08/00e11830a793/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&text=Java多线程学习笔记"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&title=Java多线程学习笔记"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&is_video=false&description=Java多线程学习笔记"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=Java多线程学习笔记&body=Check out this article: https://lozhu.happy365.day/2020/10/08/00e11830a793/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&title=Java多线程学习笔记"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&title=Java多线程学习笔记"><i class="fab fa-reddit " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&title=Java多线程学习笔记"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&title=Java多线程学习笔记"><i class="fab fa-digg " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&name=Java多线程学习笔记&description=&lt;p&gt;创建线程的两种方式：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;继承Thread类；&lt;/li&gt;
+&lt;li&gt;实现Runnable接口。&lt;/li&gt;
+&lt;/ul&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2020/10/08/00e11830a793/&t=Java多线程学习笔记"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+    
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Java多线程学习笔记
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">lozhu</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-10-08T08:26:13.000Z" class="dt-published" itemprop="datePublished">2020-10-08</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+    </div>
+
+
+      
+    <!-- <div class="article-tag"> -->
+    <div class="article-category">
+        <i class="fa-solid fa-tag"></i>
+        <!-- <a class="p-category" href="/tags/Java/" rel="tag">Java</a>, <a class="p-category" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag">多线程</a> -->
+        <a class="category-link" href="/tags/Java/" rel="tag">Java</a>, <a class="category-link" href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag">多线程</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>创建线程的两种方式：</p>
+<ul>
+<li>继承Thread类；</li>
+<li>实现Runnable接口。</li>
+</ul>
+<span id="more"></span>
+
+<ol>
+<li>继承Thread类：</li>
+</ol>
+<pre><code class="java">public class MyThread extends Thread &#123;
+    public void run() &#123;
+        System.out.println(&quot;My thread.&quot;);
+    &#125;
+
+    public static void main(String[] args) &#123;
+        MyThread myThread = new MyThread();
+        myThread.start();
+    &#125;
+&#125;
+</code></pre>
+<ol start="2">
+<li>当一个类已经继承了其他类时，就只能实现Runnable接口：</li>
+</ol>
+<pre><code class="java">public class MyThread extends OtherClass implements Runnable &#123;
+    @Override
+    public void run() &#123;
+        System.out.println(&quot;my thread&quot;);
+    &#125;
+
+    public static void main(String[] args) &#123;
+        // 先创建一个Thread实例，再传入自己的MyThread实例
+        MyThread myThread = new MyThread();
+        new Thread(myThread).start();
+    &#125;
+&#125;
+</code></pre>
+<p><em>Thread类实现了Runnable接口。</em></p>
+<pre><code class="java">public class Thread implements Runnable &#123;
+    private volatile String name;
+    private int priority;
+    ...
+&#125;
+</code></pre>
+<p>当线程有返回值时，必须实现Callable接口，执行Callable任务后返回Future对象，调用Future对象的get()方法获取返回值：</p>
+<pre><code class="java">public class MyThread2 implements Callable &#123;
+
+    private int i;
+
+    MyThread2(int i) &#123;
+        this.i = i;
+    &#125;
+
+    @Override
+    public Object call() throws Exception &#123;
+        return i * i * i;
+    &#125;
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException &#123;
+        int taskSize = 10;
+        ExecutorService pool = Executors.newFixedThreadPool(taskSize);
+        List&lt;Future&gt; list = new ArrayList&lt;&gt;();
+
+        for (int i = 0; i &lt; taskSize; i++) &#123;
+            Callable callable = new MyThread2(i);
+            Future future = pool.submit(callable);
+            list.add(future);
+        &#125;
+        pool.shutdown();
+
+        for (Future future : list) &#123;
+            System.out.println(future.get().toString());
+        &#125;
+    &#125;
+&#125;
+</code></pre>
+<p><strong>new Thread的弊端如下：</strong></p>
+<p>a. 每次new Thread新建对象性能差。<br>b. 线程缺乏统一管理，可能无限制新建线程，相互之间竞争，及可能占用过多系统资源导致死机或oom。<br>c. 缺乏更多功能，如定时执行、定期执行、线程中断。</p>
+<p><strong>相比new Thread，Java提供的四种线程池的好处在于：</strong></p>
+<p>a. 重用存在的线程，减少对象创建、消亡的开销，性能佳。<br>b. 可有效控制最大并发线程数，提高系统资源的使用率，同时避免过多资源竞争，避免堵塞。<br>c. 提供定时执行、定期执行、单线程、并发数控制等功能。</p>
+<p>参见 &gt;&gt; <a target="_blank" rel="noopener" href="https://blog.csdn.net/u011974987/article/details/51027795">Java 四种线程池的用法分析</a></p>
+<p>Java提供的4种线程池：</p>
+<ul>
+<li>newCachedThreadPool：创建一个可缓存线程池，如果线程池长度超过处理需要，<strong>可灵活回收空闲线程</strong>，若无可回收，则新建线程。</li>
+<li>newFixedThreadPool：创建一个定长线程池，<strong>可控制线程最大并发数</strong>，超出的线程会在队列中等待。</li>
+<li>newSchuduledThreadPool：创建一个定长线程池，<strong>支持定时及周期性任务执行</strong>。</li>
+<li>newSingleThreadPool：创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，<strong>保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行</strong>。</li>
+</ul>
+<p>newCachedThreadPool</p>
+<pre><code class="java">public class MyThread4 &#123;
+    public static void main(String[] args) &#123;
+        ExecutorService pool = Executors.newCachedThreadPool();
+        for (int i = 0; i &lt; 5; i++) &#123;
+            final int index = i;
+            try &#123;
+                Thread.sleep(i * 500);
+            &#125; catch (InterruptedException e) &#123;
+                e.printStackTrace();
+            &#125;
+            pool.execute(() -&gt; System.out.println(Thread.currentThread().getName() + &quot; &quot; + index));
+        &#125;
+    &#125;
+&#125;
+</code></pre>
+<p>线程池为无限大，当执行第二个任务时第一个任务已经完成，会复用执行第一个任务的线程，而不用每次新建线程。</p>
+<pre><code>pool-1-thread-1 0
+pool-1-thread-1 1
+pool-1-thread-1 2
+pool-1-thread-1 3
+pool-1-thread-1 4
+pool-1-thread-1 5
+pool-1-thread-1 6
+pool-1-thread-1 7
+pool-1-thread-1 8
+pool-1-thread-1 9
+</code></pre>
+<p>newFixedThreadPool</p>
+<pre><code class="java">ExecutorService pool = Executors.newFixedThreadPool(3);
+for (int i = 0; i &lt; 10; i++) &#123;
+    final int x = i;
+    pool.execute(() -&gt; &#123;
+        try &#123;
+            Thread.sleep(1000);
+        &#125; catch (InterruptedException e) &#123;
+            e.printStackTrace();
+        &#125;
+        System.out.println(Thread.currentThread().getName() + &quot;  &quot; + x);
+    &#125;);
+&#125;
+</code></pre>
+<p>任务数超出最大线程数，超出的线程会等待：</p>
+<pre><code>pool-1-thread-2  1
+pool-1-thread-3  2
+pool-1-thread-1  0
+pool-1-thread-2  3
+pool-1-thread-1  5
+pool-1-thread-3  4
+pool-1-thread-2  6
+pool-1-thread-1  7
+pool-1-thread-3  8
+pool-1-thread-2  9
+</code></pre>
+<p>newSchuduledThreadPool</p>
+<pre><code class="java">ScheduledExecutorService pool = Executors.newScheduledThreadPool(3);
+// 延迟 1 秒后每 3 秒执行一次
+pool.scheduleAtFixedRate(() -&gt; System.out.println(Thread.currentThread().getName()), 1, 3, TimeUnit.SECONDS);
+</code></pre>
+<p>newSingleThreadPool</p>
+<pre><code class="java">ExecutorService pool = Executors.newSingleThreadExecutor();
+for (int i = 0; i &lt; 10; i++) &#123;
+    final int index = i;
+    pool.execute(() -&gt; System.out.println(Thread.currentThread().getName() + &quot; &quot; + index));
+&#125;
+</code></pre>
+<pre><code>pool-1-thread-1 0
+pool-1-thread-1 1
+pool-1-thread-1 2
+pool-1-thread-1 3
+pool-1-thread-1 4
+pool-1-thread-1 5
+pool-1-thread-1 6
+pool-1-thread-1 7
+pool-1-thread-1 8
+pool-1-thread-1 9
+</code></pre>
+<p>线程的生命周期：</p>
+<p>新建New：JVM分配内存，并初始化成员变量的值；</p>
+<p>就绪Runnable：创建方法调用栈和程序计数器；</p>
+<p>运行 Running：获得CPU，执行run()方法；</p>
+<p>阻塞 Blocked：让出CPU时间片，停止运行；</p>
+<p>死亡 Dead：正常结束，异常结束或调用stop()方法。</p>
+<blockquote>
+<p>wait()和sleep()的关键的区别在于，sleep()方法属于Thread类，wait()方法属于Object类，wait()是用于线程间通信的，而sleep()是用于短时间暂停当前线程。更加明显的一个区别在于，<strong>当一个线程调用wait()方法的时候，会释放它锁持有的对象的管程和锁，但是调用sleep()方法的时候，不会释放他所持有的管程。</strong></p>
+<p>而当调用 wait()方法的时候，线程会放弃对象锁，进入等待此对象的等待锁定池，只有针对此对象调用 notify()方法后本线程才进入对象锁定池准备获取对象锁进入运行状态。</p>
+</blockquote>
+<p>终止线程的3种方式 &gt; <a target="_blank" rel="noopener" href="https://blog.csdn.net/Smile_Miracle/article/details/71550548">Java中如何优雅正确的终止线程</a></p>
+<ol>
+<li><p>使用stop()方法</p>
+<p>thread.stop()调用之后，创建子线程的线程就会抛出 ThreadDeatherror 的错误，并且会释放子线程所持有的所有锁。一般任何进行加锁的代码块，都是为了保护数据的一致性，如果在调用thread.stop()后导致了该线程所持有的所有锁的突然释放(不可控制)，那么被保护数据就有可能呈现不一致性，其他线程在使用这些被破坏的数据时，有可能导致一些很奇怪的应用程序错误。因此，并不推荐使用 stop 方法来终止线程。</p>
+</li>
+<li><p>使用volatile标志位：</p>
+<pre><code class="java">public class MyRunnable implements Runnable &#123;
+
+    public volatile boolean flag = true;
+
+    @Override
+    public void run() &#123;
+        System.out.println(Thread.currentThread().getName() + &quot;创建&quot;);
+        try &#123;
+            Thread.sleep(1000L);
+        &#125; catch (InterruptedException e) &#123;
+            e.printStackTrace();
+        &#125;
+        while (flag) &#123;
+
+        &#125;
+        System.out.println(Thread.currentThread().getName() + &quot;终止&quot;);
+    &#125;
+
+    public static void main(String[] args) throws InterruptedException &#123;
+        MyRunnable myRunnable = new MyRunnable();
+        for (int i = 0; i &lt; 3; i++) &#123;
+            Thread thread = new Thread(myRunnable, i + &quot; &quot;);
+            thread.start();
+        &#125;
+        Thread.sleep(2000L);
+        System.out.println(&quot;-------&quot;);
+        myRunnable.flag = false;
+    &#125;
+&#125;
+</code></pre>
+<p>output</p>
+<pre><code>0 创建
+2 创建
+1 创建
+-------
+2 终止
+0 终止
+1 终止
+</code></pre>
+</li>
+<li><p>使用interrupt方式</p>
+<ol>
+<li><p>线程处于阻塞状态时：</p>
+<p>如使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时，会使线程处于阻塞状态。当调用线程的 interrupt()方法时，会抛出 InterruptException 异常。阻塞中的那个方法抛出这个异常，通过代码捕获该异常，然后 break 跳出循环状态，从而让我们有机会结束这个线程的执行。通常很多人认为只要调用 interrupt 方法线程就会结束，实际上是错的， 一定要先捕获 InterruptedException 异常之后通过break 来跳出循环，才能正常结束 run 方法。</p>
+<pre><code class="java">public class MyThread5 extends Thread &#123;
+
+    @Override
+    public void run() &#123;
+        try &#123;
+            Thread.sleep(3000L);
+        &#125; catch (InterruptedException e) &#123;
+            e.printStackTrace();
+        &#125;
+    &#125;
+
+    public static void main(String[] args) &#123;
+        MyThread5 thread5 = new MyThread5();
+        thread5.start();
+        boolean interrupted = thread5.isInterrupted();
+        if (!interrupted) &#123;
+            thread5.interrupt();
+        &#125;
+    &#125;
+&#125;
+
+output
+java.lang.InterruptedException: sleep interrupted
+    at java.base/java.lang.Thread.sleep(Native Method)
+    at ch4.MyThread5.run(MyThread5.java:12)
+</code></pre>
+</li>
+<li><p>线程未处于阻塞状态：</p>
+<p>使用 isInterrupted()判断线程的中断标志来退出循环。当使用<br>interrupt()方法时，中断标志就会置 true，和使用自定义的标志来控制循环是一样的道理。</p>
+<pre><code class="java">public class MyThread5 extends Thread &#123;
+    public void run() &#123;
+        super.run();
+
+        try &#123;
+            System.out.println(&quot;线程开始。。。&quot;);
+            Thread.sleep(200000);
+            System.out.println(&quot;线程结束。&quot;);
+        &#125; catch (InterruptedException e) &#123;
+            System.out.println(&quot;在沉睡中被停止, 进入catch， 调用isInterrupted()方法的结果是：&quot; + this.isInterrupted());
+            e.printStackTrace();
+        &#125;
+    &#125;
+
+    public static void main(String[] args) &#123;
+        MyThread5 thread5 = new MyThread5();
+        thread5.start();
+        thread5.interrupt();
+    &#125;
+&#125;
+
+output
+线程开始。。。
+在沉睡中被停止, 进入catch， 调用isInterrupted()方法的结果是：false
+java.lang.InterruptedException: sleep interrupted
+    at java.base/java.lang.Thread.sleep(Native Method)
+    at ch4.MyThread5.run(MyThread5.java:13)
+</code></pre>
+</li>
+</ol>
+</li>
+</ol>
+<p>线程基本方法：</p>
+<p>yield：线程的礼让指的是先将线程的资源让出去，让别的线程先执行。</p>
+<pre><code class="java">public class ThreadMethod extends Thread &#123;
+    public static void main(String[] args) &#123;
+        Thread thread = new Thread(() -&gt; &#123;
+            for (int x = 0; x &lt; 10; x++) &#123;
+                if (x % 3 == 0) &#123;
+                    Thread.yield(); //线程礼让
+                    System.out.println(&quot;玩耍线程礼让执行 ***********************&quot;);
+                &#125;
+                System.out.println(Thread.currentThread().getName() + &quot;、 x = &quot; + x);
+            &#125;
+        &#125;, &quot;玩耍的线程&quot;);
+        thread.start();
+        for (int x = 0; x &lt; 10; x++) &#123;
+            System.out.println(&quot;【霸道的main主线程】 x = &quot; + x);
+        &#125;
+    &#125;
+&#125;
+</code></pre>
+<p>output</p>
+<pre><code>玩耍线程礼让执行 ***********************
+【霸道的main主线程】 x = 0
+【霸道的main主线程】 x = 1
+【霸道的main主线程】 x = 2
+【霸道的main主线程】 x = 3
+【霸道的main主线程】 x = 4
+【霸道的main主线程】 x = 5
+【霸道的main主线程】 x = 6
+【霸道的main主线程】 x = 7
+【霸道的main主线程】 x = 8
+【霸道的main主线程】 x = 9
+玩耍的线程、 x = 0
+玩耍的线程、 x = 1
+玩耍的线程、 x = 2
+玩耍线程礼让执行 ***********************
+玩耍的线程、 x = 3
+玩耍的线程、 x = 4
+玩耍的线程、 x = 5
+玩耍线程礼让执行 ***********************
+玩耍的线程、 x = 6
+玩耍的线程、 x = 7
+玩耍的线程、 x = 8
+玩耍线程礼让执行 ***********************
+玩耍的线程、 x = 9
+</code></pre>
+<p>join: 线程强制执行，指的当满足某些条件之后，某一个线程对象将一直可以独占资源，一直到该线程的程序执行结束。</p>
+<pre><code class="java">public class ThreadMethod extends Thread &#123;
+    public static void main(String[] args) throws InterruptedException &#123;
+        Thread mainThread = Thread.currentThread(); //获得主线程
+        Thread thread = new Thread(() -&gt; &#123;
+            for (int x = 0; x &lt; 10; x++) &#123;
+                if (x == 3) &#123;  //如果x == 3，就强制执行主线程
+                    try &#123;
+                        mainThread.join();
+                    &#125; catch (InterruptedException e) &#123;
+                        e.printStackTrace();
+                    &#125;
+                &#125;
+                System.out.println(Thread.currentThread().getName() + &quot;、 x = &quot; + x);
+            &#125;
+        &#125;, &quot;玩耍的线程&quot;);
+        thread.start();
+        for (int x = 0; x &lt; 10; x++) &#123;
+            Thread.sleep(100L);
+            System.out.println(&quot;【霸道的main主线程】 x = &quot; + x);
+        &#125;
+    &#125;
+&#125;
+</code></pre>
+<p>output</p>
+<pre><code>玩耍的线程、 x = 0
+玩耍的线程、 x = 1
+玩耍的线程、 x = 2
+【霸道的main主线程】 x = 0
+【霸道的main主线程】 x = 1
+【霸道的main主线程】 x = 2
+【霸道的main主线程】 x = 3
+【霸道的main主线程】 x = 4
+【霸道的main主线程】 x = 5
+【霸道的main主线程】 x = 6
+【霸道的main主线程】 x = 7
+【霸道的main主线程】 x = 8
+【霸道的main主线程】 x = 9
+玩耍的线程、 x = 3
+玩耍的线程、 x = 4
+玩耍的线程、 x = 5
+玩耍的线程、 x = 6
+玩耍的线程、 x = 7
+玩耍的线程、 x = 8
+玩耍的线程、 x = 9
+</code></pre>
+<p>sleep： 休眠的主要特点是可以自动实现线程的唤醒，以继续进行后续的处理。但是需要注意的是，如果现在有多个线程对象，休眠也是有多个先后顺序的。</p>
+<p>wait和notify：</p>
+<ul>
+<li>synchronized关键词用于互斥访问。</li>
+<li>为了让一个方法是同步的，简单的添加synchronized关键词到它们的声明上。那么同一个对象上没有两个同步方法的调用可以相互交错。</li>
+<li>同步语句必须指定提供内在锁的对象。当使用synchronized(this)时候，必须避免使用同步其他对象方法的调用。</li>
+<li>wait()告诉调用的线程放弃监视器和进入休眠状态，直到其他线程进入相同的监视器和调用notify()。</li>
+<li>notify()唤醒在相同对象上第一个调用wait()的线程。</li>
+</ul>
+<pre><code class="java">public class ThreadA &#123;
+    public static void main(String[] args) &#123;
+        ThreadB b = new ThreadB();
+        b.start();
+
+        synchronized (b) &#123;
+            try &#123;
+                System.out.println(&quot;Waiting for b to complete...&quot;);
+                b.wait();
+            &#125; catch (InterruptedException e) &#123;
+                e.printStackTrace();
+            &#125;
+
+            System.out.println(&quot;Total is: &quot; + b.total);
+        &#125;
+    &#125;
+&#125;
+
+class ThreadB extends Thread &#123;
+    int total;
+
+    @Override
+    public void run() &#123;
+        synchronized (this) &#123;
+            for (int i = 0; i &lt; 100; i++) &#123;
+                total += i;
+            &#125;
+            notify();
+        &#125;
+    &#125;
+&#125;
+</code></pre>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="utterances_thread">
+            <noscript>加载评论需要在浏览器启用 JavaScript 脚本支持。</noscript>
+        </div>
+    </div>
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/friends/">友链</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2020/10/08/00e11830a793/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&text=Java多线程学习笔记"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&title=Java多线程学习笔记"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&is_video=false&description=Java多线程学习笔记"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=Java多线程学习笔记&body=Check out this article: https://lozhu.happy365.day/2020/10/08/00e11830a793/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&title=Java多线程学习笔记"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&title=Java多线程学习笔记"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&title=Java多线程学习笔记"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&title=Java多线程学习笔记"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2020/10/08/00e11830a793/&name=Java多线程学习笔记&description=&lt;p&gt;创建线程的两种方式：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;继承Thread类；&lt;/li&gt;
+&lt;li&gt;实现Runnable接口。&lt;/li&gt;
+&lt;/ul&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2020/10/08/00e11830a793/&t=Java多线程学习笔记"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    <!-- Copyright --> &copy;
+    
+    
+    2018-2024
+    lozhu
+  </div>
+  
+    <div>
+      <a href="https://icp.gov.moe/?keyword=20249900" target="_blank">萌ICP备 20249900 号</a>
+    </div>
+  
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?8bdf047ae0a66729bd3b27e8bb56fe11";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      </script>
+
+<!-- 51la Analytics -->
+
+  <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+  <script>
+  LA.init({
+      id: '3I0QIERSX42bDzDc',
+      ck: '3I0QIERSX42bDzDc'
+  })
+  </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+    <script type="text/javascript">
+      var utterances_repo = 'lozhu20/my-blog-comments';
+      var utterances_issue_term = 'pathname';
+      var utterances_label = 'Comment';
+      var utterances_theme = 'github-light';
+
+      (function(){
+          var script = document.createElement('script');
+
+          script.src = 'https://utteranc.es/client.js';
+          script.setAttribute('repo', utterances_repo);
+          script.setAttribute('issue-term', 'pathname');
+          script.setAttribute('label', utterances_label);
+          script.setAttribute('theme', utterances_theme);
+          script.setAttribute('crossorigin', 'anonymous');
+          script.async = true;
+          (document.getElementById('utterances_thread')).appendChild(script);
+      }());
+  </script>
+
+<!-- image modal -->
+<script>
+  (function() {
+    var contentNode = document.getElementsByClassName('content e-content');
+    if (!contentNode || contentNode.length === 0) {
+      console.log('no content, exit');
+      return;
+    }
+
+    var imgsNodes = contentNode[0].getElementsByTagName('img');
+    if (!imgsNodes || imgsNodes.length === 0) {
+      console.log('no image, exit');
+      return;
+    }
+
+    var span = document.getElementById('modal_close_btn');
+    span.onclick = function() { 
+      modal.style.display = "none";
+    };
+
+    var modal = document.getElementById('modal');
+    var modalImage = document.getElementById('modal_image');
+    var captionText = document.getElementById('caption');
+
+    for (var i = imgsNodes.length - 1; i >= 0; i--) {
+      let image = imgsNodes[i];
+      image.onclick = function() {
+        modal.style.display = "block";
+        modalImage.src = this.src;
+        captionText.innerHTML = this.alt || "文章配图";
+      };
+    }
+  }());
+</script>
+
+</body>
+</html>

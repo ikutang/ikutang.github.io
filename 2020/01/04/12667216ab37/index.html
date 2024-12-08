@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="baidu-site-verification" content="codeva-OBV0UPgBod" />
+    <meta name="msvalidate.01" content="B9019CE3751A15D63E78AF8679980069" />
+    <meta name="description" content="听歌：宇宙を見上げて （动画《比宇宙更远的地方》插入曲） 经过上个周末以及元旦一天的努力，手里的web项目也过半了，于是陆续准备了许多材料打算开始做基于树莓派和OpenCV的自主寻迹小车。正好今天周六数码显示管到了，于是想先摸索着点亮看看，之前也没搞过。往上资料不是很详细，花了两三个小时才搞明白，记录一下备忘。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="树莓派驱动4位数码管">
+<meta property="og:url" content="https://lozhu.happy365.day/2020/01/04/12667216ab37/index.html">
+<meta property="og:site_name" content="Lozhu&#39;s blog">
+<meta property="og:description" content="听歌：宇宙を見上げて （动画《比宇宙更远的地方》插入曲） 经过上个周末以及元旦一天的努力，手里的web项目也过半了，于是陆续准备了许多材料打算开始做基于树莓派和OpenCV的自主寻迹小车。正好今天周六数码显示管到了，于是想先摸索着点亮看看，之前也没搞过。往上资料不是很详细，花了两三个小时才搞明白，记录一下备忘。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.happy365.day/24/04/17221831.gif">
+<meta property="og:image" content="https://images.happy365.day/24/04/17221932.jpg">
+<meta property="og:image" content="https://images.happy365.day/24/04/17222047.png">
+<meta property="article:published_time" content="2020-01-04T14:22:25.000Z">
+<meta property="article:modified_time" content="2024-12-08T06:50:57.175Z">
+<meta property="article:author" content="lozhu">
+<meta property="article:tag" content="IoT">
+<meta property="article:tag" content="树莓派">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.happy365.day/24/04/17221831.gif">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>树莓派驱动4位数码管</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XMGS491MQF"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XMGS491MQF');
+  </script>
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Lozhu's blog" type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="modal" class="modal">
+  <span id="modal_close_btn" class="modal-close-btn">x</span>
+  <img id="modal_image" class="modal-image">
+  <!-- <div id="caption"></div> -->
+</div>
+
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2020/01/05/827e7c295051/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2020/01/01/990f01d0c9f5/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2020/01/04/12667216ab37/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&text=树莓派驱动4位数码管"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&title=树莓派驱动4位数码管"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&is_video=false&description=树莓派驱动4位数码管"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=树莓派驱动4位数码管&body=Check out this article: https://lozhu.happy365.day/2020/01/04/12667216ab37/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&title=树莓派驱动4位数码管"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&title=树莓派驱动4位数码管"><i class="fab fa-reddit " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&title=树莓派驱动4位数码管"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&title=树莓派驱动4位数码管"><i class="fab fa-digg " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&name=树莓派驱动4位数码管&description=&lt;p&gt;听歌：&lt;a href=&#34;http://url.cn/5vzNt1p&#34;&gt;宇宙を見上げて&lt;/a&gt; （动画《比宇宙更远的地方》插入曲）&lt;/p&gt;
+&lt;p&gt;经过上个周末以及元旦一天的努力，手里的web项目也过半了，于是陆续准备了许多材料打算开始做基于树莓派和OpenCV的自主寻迹小车。正好今天周六数码显示管到了，于是想先摸索着点亮看看，之前也没搞过。往上资料不是很详细，花了两三个小时才搞明白，记录一下备忘。&lt;/p&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2020/01/04/12667216ab37/&t=树莓派驱动4位数码管"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">硬件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E7%BA%BF"><span class="toc-number">3.</span> <span class="toc-text">接线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%98%BE%E7%A4%BA%E5%BD%93%E5%89%8D%E6%97%B6%E9%97%B4%E7%9A%84%E4%BB%A3%E7%A0%81"><span class="toc-number">4.</span> <span class="toc-text">显示当前时间的代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="toc-number">5.</span> <span class="toc-text">运行结果</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        树莓派驱动4位数码管
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">lozhu</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-01-04T14:22:25.000Z" class="dt-published" itemprop="datePublished">2020-01-04</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+    </div>
+
+
+      
+    <!-- <div class="article-tag"> -->
+    <div class="article-category">
+        <i class="fa-solid fa-tag"></i>
+        <!-- <a class="p-category" href="/tags/IoT/" rel="tag">IoT</a>, <a class="p-category" href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/" rel="tag">树莓派</a> -->
+        <a class="category-link" href="/tags/IoT/" rel="tag">IoT</a>, <a class="category-link" href="/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/" rel="tag">树莓派</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>听歌：<a target="_blank" rel="noopener" href="http://url.cn/5vzNt1p">宇宙を見上げて</a> （动画《比宇宙更远的地方》插入曲）</p>
+<p>经过上个周末以及元旦一天的努力，手里的web项目也过半了，于是陆续准备了许多材料打算开始做基于树莓派和OpenCV的自主寻迹小车。正好今天周六数码显示管到了，于是想先摸索着点亮看看，之前也没搞过。往上资料不是很详细，花了两三个小时才搞明白，记录一下备忘。</p>
+<span id="more"></span>
+
+<br>
+
+<h2 id="硬件"><a href="#硬件" class="headerlink" title="硬件"></a>硬件</h2><ul>
+<li>树莓派（3b+）</li>
+<li>4位数码显示管</li>
+<li>T型扩展板（非必需）</li>
+<li>12根母对母杜邦线</li>
+</ul>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p><a target="_blank" rel="noopener" href="https://www.kawabangga.com/posts/1408">树莓派控制3641BS数码管显示数字</a></p>
+<p>元件电路图：</p>
+<p><img src="https://images.happy365.day/24/04/17221831.gif" alt="4位数码管电路原理图"></p>
+<p>我自己买的共阴极的。</p>
+<p>引脚：</p>
+<p><img src="https://images.happy365.day/24/04/17221932.jpg" alt="引脚图"></p>
+<p>引脚编号从下往上，从左往右然后再从右往左。</p>
+<p>其中 12 号引脚控制第一个数字的显示，然后 9 -&gt; 2，8 -&gt; 3，6 -&gt; 4。</p>
+<h2 id="接线"><a href="#接线" class="headerlink" title="接线"></a>接线</h2><p>在接线这儿犹豫了一会儿，因为担心接线接错了可能会直接烧毁数码显示器和树莓派，往上也没有找到详细的线路图。后来看了电路图后直接将所有引脚用母对母杜邦线接到了GPIO口。接完了了之后只测试了一个数字的显示，确认显示正常值后才开始写代码。</p>
+<p>在我的3b+ T型扩展板上（用的BCM编码方式），连线是这样的：</p>
+<table>
+<thead>
+<tr>
+<th>树莓派引脚（BCM）</th>
+<th>数码显示器引脚</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>G18</td>
+<td>11</td>
+</tr>
+<tr>
+<td>G19</td>
+<td>7</td>
+</tr>
+<tr>
+<td>G20</td>
+<td>4</td>
+</tr>
+<tr>
+<td>G21</td>
+<td>2</td>
+</tr>
+<tr>
+<td>G22</td>
+<td>1</td>
+</tr>
+<tr>
+<td>G23</td>
+<td>10</td>
+</tr>
+<tr>
+<td>G24</td>
+<td>5</td>
+</tr>
+<tr>
+<td>G25</td>
+<td>3</td>
+</tr>
+<tr>
+<td>G13</td>
+<td>12</td>
+</tr>
+<tr>
+<td>G16</td>
+<td>9</td>
+</tr>
+<tr>
+<td>G17</td>
+<td>8</td>
+</tr>
+<tr>
+<td>G26</td>
+<td>6</td>
+</tr>
+</tbody></table>
+<h2 id="显示当前时间的代码"><a href="#显示当前时间的代码" class="headerlink" title="显示当前时间的代码"></a>显示当前时间的代码</h2><p>代码是从这里搬过来的，但是我把时间改成了小时+分钟的形式，然后这段代码有些bug，做了一些修改。</p>
+<p><a target="_blank" rel="noopener" href="https://www.kawabangga.com/posts/1408">树莓派控制3641BS数码管显示数字</a></p>
+<p>最后修正后的代码如下，将高电位和低电位进行了反转；在Ln157到Ln176行增加了显示1, 2, 3, 4其中一个数字的时候，将其他三个数字选择置于高电平，是高电位哦；在程序退出时增加了RPi.GPIO.cleanup()，避免程序退出数码管依然显示。</p>
+<pre><code class="python"># !/usr/bin/bin/env python
+# coding:utf-8
+
+
+import RPi.GPIO as GPIO
+import time
+
+
+# mapping LED to GPIO
+LED_A = 18 # 11
+LED_B = 19 # 7
+LED_C = 20 # 4
+LED_D = 21 # 2
+LED_E = 22 # 1
+LED_F = 23 # 10
+LED_G = 24 # 5
+LED_DP = 25 # 3
+ 
+# mapping public GPIO
+DIGIT1 = 13 # 12
+DIGIT2 = 16 # 9
+DIGIT3 = 17 # 8
+DIGIT4 = 26 # 6
+ 
+#sleep time - loop displey
+t=0.001
+ 
+GPIO.setmode(GPIO.BCM)
+ 
+GPIO.setup(LED_A, GPIO.OUT)
+GPIO.setup(LED_B, GPIO.OUT)
+GPIO.setup(LED_C, GPIO.OUT)
+GPIO.setup(LED_D, GPIO.OUT)
+GPIO.setup(LED_E, GPIO.OUT)
+GPIO.setup(LED_F, GPIO.OUT)
+GPIO.setup(LED_G, GPIO.OUT)
+GPIO.setup(LED_DP, GPIO.OUT)
+GPIO.setup(DIGIT1, GPIO.OUT)
+GPIO.setup(DIGIT2, GPIO.OUT)
+GPIO.setup(DIGIT3, GPIO.OUT)
+GPIO.setup(DIGIT4, GPIO.OUT)
+ 
+GPIO.output(DIGIT1, True)
+GPIO.output(DIGIT2, True)
+GPIO.output(DIGIT3, True)
+GPIO.output(DIGIT4, True)
+ 
+ 
+def showDigit(no, num, showDotPoint=False):
+
+    GPIO.setup(LED_A, False)
+    GPIO.setup(LED_B, False)
+    GPIO.setup(LED_C, False)
+    GPIO.setup(LED_D, False)
+    GPIO.setup(LED_E, False)
+    GPIO.setup(LED_F, False)
+    GPIO.setup(LED_G, False)
+    GPIO.setup(LED_DP, False)
+
+
+    GPIO.output(DIGIT1, False)
+    GPIO.output(DIGIT2, False)
+    GPIO.output(DIGIT3, False)
+    GPIO.output(DIGIT4, False)
+ 
+    if (num == 0) :
+        GPIO.output(LED_A, True)
+        GPIO.output(LED_B, True)
+        GPIO.output(LED_C, True)
+        GPIO.output(LED_D, True)
+        GPIO.output(LED_E, True)
+        GPIO.output(LED_F, True)
+        GPIO.output(LED_G, False)
+        GPIO.output(LED_DP, showDotPoint)
+    elif (num == 1) :
+        GPIO.output(LED_A, False)
+        GPIO.output(LED_B, True)
+        GPIO.output(LED_C, True)
+        GPIO.output(LED_D, False)
+        GPIO.output(LED_E, False)
+        GPIO.output(LED_F, False)
+        GPIO.output(LED_G, False)
+        GPIO.output(LED_DP, showDotPoint)
+    elif (num == 2) :
+        GPIO.output(LED_A, True)
+        GPIO.output(LED_B, True)
+        GPIO.output(LED_C, False)
+        GPIO.output(LED_D, True)
+        GPIO.output(LED_E, True)
+        GPIO.output(LED_F, False)
+        GPIO.output(LED_G, True)
+        GPIO.output(LED_DP, showDotPoint)
+    elif (num == 3) :
+        GPIO.output(LED_A, True)
+        GPIO.output(LED_B, True)
+        GPIO.output(LED_C, True)
+        GPIO.output(LED_D, True)
+        GPIO.output(LED_E, False)
+        GPIO.output(LED_F, False)
+        GPIO.output(LED_G, True)
+        GPIO.output(LED_DP, showDotPoint)
+    elif (num == 4) :
+        GPIO.output(LED_A, False)
+        GPIO.output(LED_B, True)
+        GPIO.output(LED_C, True)
+        GPIO.output(LED_D, False)
+        GPIO.output(LED_E, False)
+        GPIO.output(LED_F, True)
+        GPIO.output(LED_G, True)
+        GPIO.output(LED_DP, showDotPoint)
+    elif (num == 5) :
+        GPIO.output(LED_A, True)
+        GPIO.output(LED_B, False)
+        GPIO.output(LED_C, True)
+        GPIO.output(LED_D, True)
+        GPIO.output(LED_E, False)
+        GPIO.output(LED_F, True)
+        GPIO.output(LED_G, True)
+        GPIO.output(LED_DP, showDotPoint)
+    elif (num == 6) :
+        GPIO.output(LED_A, True)
+        GPIO.output(LED_B, False)
+        GPIO.output(LED_C, True)
+        GPIO.output(LED_D, True)
+        GPIO.output(LED_E, True)
+        GPIO.output(LED_F, True)
+        GPIO.output(LED_G, True)
+        GPIO.output(LED_DP, showDotPoint)
+    elif (num == 7) :
+        GPIO.output(LED_A, True)
+        GPIO.output(LED_B, True)
+        GPIO.output(LED_C, True)
+        GPIO.output(LED_D, False)
+        GPIO.output(LED_E, False)
+        GPIO.output(LED_F, False)
+        GPIO.output(LED_G, False)
+        GPIO.output(LED_DP, showDotPoint)
+    elif (num == 8) :
+        GPIO.output(LED_A, True)
+        GPIO.output(LED_B, True)
+        GPIO.output(LED_C, True)
+        GPIO.output(LED_D, True)
+        GPIO.output(LED_E, True)
+        GPIO.output(LED_F, True)
+        GPIO.output(LED_G, True)
+        GPIO.output(LED_DP, showDotPoint)
+    elif (num == 9) :
+        GPIO.output(LED_A, True)
+        GPIO.output(LED_B, True)
+        GPIO.output(LED_C, True)
+        GPIO.output(LED_D, True)
+        GPIO.output(LED_E, False)
+        GPIO.output(LED_F, True)
+        GPIO.output(LED_G, True)
+        GPIO.output(LED_DP, showDotPoint)
+ 
+    if (no == 1) :
+        GPIO.output(DIGIT1, False)
+        GPIO.output(DIGIT2, True)
+        GPIO.output(DIGIT3, True)
+        GPIO.output(DIGIT4, True)
+    elif (no == 2) :
+        GPIO.output(DIGIT1, True)
+        GPIO.output(DIGIT2, False)
+        GPIO.output(DIGIT3, True)
+        GPIO.output(DIGIT4, True)
+    elif (no == 3) :
+        GPIO.output(DIGIT1, True)
+        GPIO.output(DIGIT2, True)
+        GPIO.output(DIGIT3, False)
+        GPIO.output(DIGIT4, True)
+    else :
+        GPIO.output(DIGIT1, True)
+        GPIO.output(DIGIT2, True)
+        GPIO.output(DIGIT3, True)
+        GPIO.output(DIGIT4, False)
+ 
+def display_time():
+    while True:
+        now = time.localtime(time.time())
+        time.sleep(t)
+        showDigit(1, int(time.strftime(&quot;%H&quot;, now)) / 10, False)
+        time.sleep(t)
+        showDigit(2, int(time.strftime(&quot;%H&quot;, now)) % 10, True)
+        time.sleep(t)
+        showDigit(3, int(time.strftime(&quot;%M&quot;, now)) / 10, False)
+        time.sleep(t)
+        showDigit(4, int(time.strftime(&quot;%M&quot;, now)) % 10, False)
+try:
+    display_time()
+finally:
+    GPIO.cleanup()
+</code></pre>
+<h2 id="运行结果"><a href="#运行结果" class="headerlink" title="运行结果"></a>运行结果</h2><p>效果如下：</p>
+<p><img src="https://images.happy365.day/24/04/17222047.png" alt="效果图"></p>
+<p>可能是二极管余辉的原因？每个数字显示得都很不纯净，暂时先这样吧。</p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="utterances_thread">
+            <noscript>加载评论需要在浏览器启用 JavaScript 脚本支持。</noscript>
+        </div>
+    </div>
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/friends/">友链</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">硬件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E7%BA%BF"><span class="toc-number">3.</span> <span class="toc-text">接线</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%98%BE%E7%A4%BA%E5%BD%93%E5%89%8D%E6%97%B6%E9%97%B4%E7%9A%84%E4%BB%A3%E7%A0%81"><span class="toc-number">4.</span> <span class="toc-text">显示当前时间的代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%90%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="toc-number">5.</span> <span class="toc-text">运行结果</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2020/01/04/12667216ab37/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&text=树莓派驱动4位数码管"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&title=树莓派驱动4位数码管"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&is_video=false&description=树莓派驱动4位数码管"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=树莓派驱动4位数码管&body=Check out this article: https://lozhu.happy365.day/2020/01/04/12667216ab37/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&title=树莓派驱动4位数码管"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&title=树莓派驱动4位数码管"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&title=树莓派驱动4位数码管"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&title=树莓派驱动4位数码管"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2020/01/04/12667216ab37/&name=树莓派驱动4位数码管&description=&lt;p&gt;听歌：&lt;a href=&#34;http://url.cn/5vzNt1p&#34;&gt;宇宙を見上げて&lt;/a&gt; （动画《比宇宙更远的地方》插入曲）&lt;/p&gt;
+&lt;p&gt;经过上个周末以及元旦一天的努力，手里的web项目也过半了，于是陆续准备了许多材料打算开始做基于树莓派和OpenCV的自主寻迹小车。正好今天周六数码显示管到了，于是想先摸索着点亮看看，之前也没搞过。往上资料不是很详细，花了两三个小时才搞明白，记录一下备忘。&lt;/p&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2020/01/04/12667216ab37/&t=树莓派驱动4位数码管"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    <!-- Copyright --> &copy;
+    
+    
+    2018-2024
+    lozhu
+  </div>
+  
+    <div>
+      <a href="https://icp.gov.moe/?keyword=20249900" target="_blank">萌ICP备 20249900 号</a>
+    </div>
+  
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?8bdf047ae0a66729bd3b27e8bb56fe11";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      </script>
+
+<!-- 51la Analytics -->
+
+  <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+  <script>
+  LA.init({
+      id: '3I0QIERSX42bDzDc',
+      ck: '3I0QIERSX42bDzDc'
+  })
+  </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+    <script type="text/javascript">
+      var utterances_repo = 'lozhu20/my-blog-comments';
+      var utterances_issue_term = 'pathname';
+      var utterances_label = 'Comment';
+      var utterances_theme = 'github-light';
+
+      (function(){
+          var script = document.createElement('script');
+
+          script.src = 'https://utteranc.es/client.js';
+          script.setAttribute('repo', utterances_repo);
+          script.setAttribute('issue-term', 'pathname');
+          script.setAttribute('label', utterances_label);
+          script.setAttribute('theme', utterances_theme);
+          script.setAttribute('crossorigin', 'anonymous');
+          script.async = true;
+          (document.getElementById('utterances_thread')).appendChild(script);
+      }());
+  </script>
+
+<!-- image modal -->
+<script>
+  (function() {
+    var contentNode = document.getElementsByClassName('content e-content');
+    if (!contentNode || contentNode.length === 0) {
+      console.log('no content, exit');
+      return;
+    }
+
+    var imgsNodes = contentNode[0].getElementsByTagName('img');
+    if (!imgsNodes || imgsNodes.length === 0) {
+      console.log('no image, exit');
+      return;
+    }
+
+    var span = document.getElementById('modal_close_btn');
+    span.onclick = function() { 
+      modal.style.display = "none";
+    };
+
+    var modal = document.getElementById('modal');
+    var modalImage = document.getElementById('modal_image');
+    var captionText = document.getElementById('caption');
+
+    for (var i = imgsNodes.length - 1; i >= 0; i--) {
+      let image = imgsNodes[i];
+      image.onclick = function() {
+        modal.style.display = "block";
+        modalImage.src = this.src;
+        captionText.innerHTML = this.alt || "文章配图";
+      };
+    }
+  }());
+</script>
+
+</body>
+</html>

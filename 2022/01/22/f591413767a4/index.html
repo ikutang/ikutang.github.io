@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="baidu-site-verification" content="codeva-OBV0UPgBod" />
+    <meta name="msvalidate.01" content="B9019CE3751A15D63E78AF8679980069" />
+    <meta name="description" content="上周末无意中在某个短视频中看到一个基于 ESP8266 开发的小电视，萌萌的外观，勾起了我的兴趣。大概半年多以前我也买了一个esp芯片，还有一块 0.96 寸 oled 屏，也有同样的想法要做一个，忘了什么原因一直闲置在一边。想着资源利用，又把这个事情提了上来。坑比想象中要多，从周六早上搞到现在，每天晚上弄到一点钟，终于弄完了，动手能力太差了。把过程记录一下，供以后参考。  VSCODE ESP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于ESP8266和心知天气的小电视">
+<meta property="og:url" content="https://lozhu.happy365.day/2022/01/22/f591413767a4/index.html">
+<meta property="og:site_name" content="Lozhu&#39;s blog">
+<meta property="og:description" content="上周末无意中在某个短视频中看到一个基于 ESP8266 开发的小电视，萌萌的外观，勾起了我的兴趣。大概半年多以前我也买了一个esp芯片，还有一块 0.96 寸 oled 屏，也有同样的想法要做一个，忘了什么原因一直闲置在一边。想着资源利用，又把这个事情提了上来。坑比想象中要多，从周六早上搞到现在，每天晚上弄到一点钟，终于弄完了，动手能力太差了。把过程记录一下，供以后参考。  VSCODE ESP">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-01-21T16:25:01.000Z">
+<meta property="article:modified_time" content="2024-12-08T06:50:57.175Z">
+<meta property="article:author" content="lozhu">
+<meta property="article:tag" content="IoT">
+<meta property="article:tag" content="ESP8266">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>基于ESP8266和心知天气的小电视</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XMGS491MQF"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XMGS491MQF');
+  </script>
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Lozhu's blog" type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="modal" class="modal">
+  <span id="modal_close_btn" class="modal-close-btn">x</span>
+  <img id="modal_image" class="modal-image">
+  <!-- <div id="caption"></div> -->
+</div>
+
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2022/01/22/f86c2029e70e/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2022/01/15/4ac95d243d69/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2022/01/22/f591413767a4/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&text=基于ESP8266和心知天气的小电视"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&title=基于ESP8266和心知天气的小电视"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&is_video=false&description=基于ESP8266和心知天气的小电视"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=基于ESP8266和心知天气的小电视&body=Check out this article: https://lozhu.happy365.day/2022/01/22/f591413767a4/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&title=基于ESP8266和心知天气的小电视"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&title=基于ESP8266和心知天气的小电视"><i class="fab fa-reddit " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&title=基于ESP8266和心知天气的小电视"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&title=基于ESP8266和心知天气的小电视"><i class="fab fa-digg " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&name=基于ESP8266和心知天气的小电视&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2022/01/22/f591413767a4/&t=基于ESP8266和心知天气的小电视"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#VSCODE-ESP8266-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-number">1.</span> <span class="toc-text">VSCODE ESP8266 开发环境搭建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WiFi%E8%BF%9E%E6%8E%A5"><span class="toc-number">2.</span> <span class="toc-text">WiFi连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#oled-%E5%B1%8F%E5%B9%95%E8%BF%9E%E6%8E%A5"><span class="toc-number">3.</span> <span class="toc-text">oled 屏幕连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E5%B1%8F%E5%B9%95%E4%B8%8A%E8%BE%93%E5%87%BA"><span class="toc-number">4.</span> <span class="toc-text">在屏幕上输出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%97%E4%BD%93%E5%8F%8A%E6%96%87%E5%AD%97%E5%A4%A7%E5%B0%8F%E7%9A%84%E6%8E%A7%E5%88%B6"><span class="toc-number">5.</span> <span class="toc-text">字体及文字大小的控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E5%A4%A9%E6%B0%94-API-%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-number">6.</span> <span class="toc-text">关于天气 API 的选择</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%83%E7%9F%A5%E5%A4%A9%E6%B0%94"><span class="toc-number">6.1.</span> <span class="toc-text">心知天气</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C%E9%A3%8E%E5%A4%A9%E6%B0%94"><span class="toc-number">6.2.</span> <span class="toc-text">和风天气</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#API-%E6%8E%A5%E5%8F%A3%E7%9A%84%E7%AB%AF%E5%8F%A3%E4%BB%A5%E5%8F%8A-SSL"><span class="toc-number">7.</span> <span class="toc-text">API 接口的端口以及 SSL</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#80-%E7%AB%AF%E5%8F%A3%E5%92%8C-443-%E7%AB%AF%E5%8F%A3"><span class="toc-number">7.1.</span> <span class="toc-text">80 端口和 443 端口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C%E9%A3%8E%E5%A4%A9%E6%B0%94-API-%E5%9F%9F%E5%90%8D%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">7.2.</span> <span class="toc-text">和风天气 API 域名的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E5%8A%A0%E5%AF%86%E9%97%AE%E9%A2%98"><span class="toc-number">7.3.</span> <span class="toc-text">接口加密问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ArduinoJson%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">8.</span> <span class="toc-text">ArduinoJson的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ArduinoJson-Assistant"><span class="toc-number">8.1.</span> <span class="toc-text">ArduinoJson Assistant</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">9.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        基于ESP8266和心知天气的小电视
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">lozhu</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2022-01-21T16:25:01.000Z" class="dt-published" itemprop="datePublished">2022-01-22</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%9B%A0%E4%B8%BA%E5%A5%BD%E7%8E%A9/">因为好玩</a>
+    </div>
+
+
+      
+    <!-- <div class="article-tag"> -->
+    <div class="article-category">
+        <i class="fa-solid fa-tag"></i>
+        <!-- <a class="p-category" href="/tags/ESP8266/" rel="tag">ESP8266</a>, <a class="p-category" href="/tags/IoT/" rel="tag">IoT</a> -->
+        <a class="category-link" href="/tags/ESP8266/" rel="tag">ESP8266</a>, <a class="category-link" href="/tags/IoT/" rel="tag">IoT</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <blockquote>
+<p>上周末无意中在某个短视频中看到一个基于 ESP8266 开发的小电视，萌萌的外观，勾起了我的兴趣。大概半年多以前我也买了一个esp芯片，还有一块 0.96 寸 oled 屏，也有同样的想法要做一个，忘了什么原因一直闲置在一边。想着资源利用，又把这个事情提了上来。坑比想象中要多，从周六早上搞到现在，每天晚上弄到一点钟，终于弄完了，动手能力太差了。把过程记录一下，供以后参考。</p>
+</blockquote>
+<h2 id="VSCODE-ESP8266-开发环境搭建"><a href="#VSCODE-ESP8266-开发环境搭建" class="headerlink" title="VSCODE ESP8266 开发环境搭建"></a>VSCODE ESP8266 开发环境搭建</h2><p>网上有很多资料，给 VSCODE 安装一些插件、添加相关配置即可。</p>
+<h2 id="WiFi连接"><a href="#WiFi连接" class="headerlink" title="WiFi连接"></a>WiFi连接</h2><p>在代码里写死 SSID 和 密码的话，WiFi 连接比较简单，没几行代码。在 <a target="_blank" rel="noopener" href="http://www.taichi-maker.com/homepage/esp8266-nodemcu-iot/iot-c/esp8266-tips/wifimanager/">ESP8266自动配网 – WiFiManager库使用说明</a> 中看到可以利用 WiFiManager 来进行配置，但是不知道是不是我安装的库不对，按照教程写完代码编译会报错，没有继续尝试。</p>
+<pre><code class="c">#include &lt;ESP8266WiFi.h&gt;
+
+// WiFi设置
+const char *ssid = &quot;My-WiFi-Name&quot;;
+const char *password = &quot;password&quot;;
+
+void setup()
+&#123;
+    Serial.begin(9600);
+    connectWifi();
+    delay(2000);
+&#125;
+
+void loop() &#123;
+&#125;
+
+void connectWifi()
+&#123;
+    // WiFiManager wifiManager;
+    // wifiManager.autoConnect(&quot;AutoConnectAP&quot;, &quot;12345678&quot;);
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED)
+    &#123;
+        delay(500);
+        Serial.print(&quot;.&quot;);
+    &#125;
+    Serial.print(&quot;IP address:    &quot;);
+    Serial.println(WiFi.localIP());
+&#125;
+</code></pre>
+<h2 id="oled-屏幕连接"><a href="#oled-屏幕连接" class="headerlink" title="oled 屏幕连接"></a>oled 屏幕连接</h2><p>这里选择了 SSD1306 这个库，所有的输出要在屏幕初始化完成之后进行。前两天优化代码的时候，把顺序弄反了，结果屏幕就是通电的时候亮一下然后黑屏，还以为屏幕不小心烧坏了。</p>
+<p>库的例子程序里 SCREEN_ADDRESS 这个值默认为 0x3D，如果例子程序都跑不起来的，可以改成 0x3C 试一下。还有检测这个地址值的程序，参考 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/cuianbing/p/14376811.html">ESP8266驱动I2C-初始化oled显示屏</a></p>
+<pre><code class="c">#include &lt;Wire.h&gt;
+#include &lt;Adafruit_GFX.h&gt;
+#include &lt;Adafruit_SSD1306.h&gt;
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+#define OLED_RESET -1       // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C ///&lt; See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &amp;Wire, OLED_RESET);
+
+void setup()
+&#123;
+    Serial.begin(9600);
+
+    // 显示器连接
+    if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
+    &#123;
+        Serial.println(F(&quot;SSD1306 allocation failed&quot;));
+        for (;;)
+            ;
+    &#125;
+    delay(2000);
+    printMessage(&quot;Display initialed!&quot;);
+    delay(2000);
+&#125;
+</code></pre>
+<h2 id="在屏幕上输出"><a href="#在屏幕上输出" class="headerlink" title="在屏幕上输出"></a>在屏幕上输出</h2><p>SSD1306 库的使用方法可以参考 <a target="_blank" rel="noopener" href="https://www.cnblogs.com/cuianbing/p/14376811.html">ESP8266驱动I2C OLED显示屏</a> 这篇博客的内容，写得非常详细且实用。常用的输出文字、描点、画线以及各种图形的函数都有例子。</p>
+<p>一个输出初始化信息的例子：</p>
+<pre><code class="c">void printMessage(char *message)
+&#123;
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0, 25);
+    display.println(message);
+    display.display();
+    delay(2000);
+&#125;
+</code></pre>
+<h2 id="字体及文字大小的控制"><a href="#字体及文字大小的控制" class="headerlink" title="字体及文字大小的控制"></a>字体及文字大小的控制</h2><p>用了好久才发现原来 SSD1306 库不支持中文输出，要输出中文必须用 drawBitmap(x, y, bitmap, size, size, color) 这个函数，考虑到取字模的话会非常费时费力，于是又尝试使用 U8g2 库，U8g2 支持常见的一小部分中文，遗憾的是，不支持调整字体大小，没办法最后只能继续使用 SSD1306，然后取字模。</p>
+<p>字体颜色必须要设置，精简代码的时候以为默认字体颜色就是白色，于是将设置颜色的代码去掉，结果背景色也是黑色，字体也是黑色，导致屏幕上看不到任何显示。</p>
+<p>生成字模有很多软件可以使用，但是都需要下载安装，比较麻烦。花了一些时间找到一个不错的字母网站：<a target="_blank" rel="noopener" href="https://www.zhetao.com/fontarray.html">单片机-LCD-LED-OLED中文点阵生成软件</a> ，可以在线生成，复制 C 代码，不需要下载安装，免费使用，使用起来比较方便。</p>
+<p>⚠ 如果输出字体比较小，比如 16x16 的话，最好不要选择“黑体”这类线条较粗的字体，不然会糊。</p>
+<h2 id="关于天气-API-的选择"><a href="#关于天气-API-的选择" class="headerlink" title="关于天气 API 的选择"></a>关于天气 API 的选择</h2><p>天气 API 的选择也是一个大坑。</p>
+<h3 id="心知天气"><a href="#心知天气" class="headerlink" title="心知天气"></a>心知天气</h3><blockquote>
+<p>因为在“太极创客”的文章例子看到使用的是心知天气，本着代码复用的原则，也选择了心知天气。调用之后发现返回字段和例子里有差异，免费版只返回了“温度”之类的3个字段，太少不够用。有收费版可以试用15天，对于我的需求，每天调用48次就足够了，不太值得付费太多。</p>
+</blockquote>
+<h3 id="和风天气"><a href="#和风天气" class="headerlink" title="和风天气"></a>和风天气</h3><blockquote>
+<p>和风天气免费版返回的字段和心知天气的收费版一样，调用频率虽然有限制但也是1分钟几十次，足有用了。但是有一个问题，就是在浏览器里 API 可以正常调用，但是在 ESP8266 里一直显示连接失败，在这个问题上卡了好久，最后选择放弃。</p>
+</blockquote>
+<h2 id="API-接口的端口以及-SSL"><a href="#API-接口的端口以及-SSL" class="headerlink" title="API 接口的端口以及 SSL"></a>API 接口的端口以及 SSL</h2><h3 id="80-端口和-443-端口"><a href="#80-端口和-443-端口" class="headerlink" title="80 端口和 443 端口"></a>80 端口和 443 端口</h3><p>在调用和风天气的接口的时候，发现一只连接失败。卡了好长时间才去对比浏览器请求和代码请求的区别，发现浏览器请求的端口是443，而我一直在 ESP8266 中请求连接 80 端口，所以一直连接失败。用 Telnet 连接 443 端口之后，发现可以正常连接上。</p>
+<h3 id="和风天气-API-域名的问题"><a href="#和风天气-API-域名的问题" class="headerlink" title="和风天气 API 域名的问题"></a>和风天气 API 域名的问题</h3><p>在浏览器请求中发现两边不仅除了端口不一样，连域名也不一样，和风天气 API 文档中给的域名是 devapi.qweather.com ，而我在浏览器调试窗口中看到的是 devapi.hweather.net ，而且这两个域名在 telnet 中都能连上、在浏览器中都能正常返回，就很谜。。</p>
+<h3 id="接口加密问题"><a href="#接口加密问题" class="headerlink" title="接口加密问题"></a>接口加密问题</h3><p>改了域名以及端口换成 443 之后，HTTP 还是显示连接失败。ESP8266 调用和风天气相关的资料不太多，在这个问题上卡了好久。</p>
+<p>去查了 443 端口相关的资料，意识到 HTTPS SSL请求的问题，最后在和风天气的官网上看到一篇公告：<a target="_blank" rel="noopener" href="https://www.qweather.com/blog/no-more-http">和风天气官方动态-不再支持非SSL接口连接</a> </p>
+<p>尝试使用 WiFiClientSecure 去调用，也没成功。</p>
+<p>最后放弃使用和风天气。</p>
+<h2 id="ArduinoJson的使用"><a href="#ArduinoJson的使用" class="headerlink" title="ArduinoJson的使用"></a>ArduinoJson的使用</h2><p>调用了心知天气API后返回的数据和浏览器请求相比少了几个字段，以为是接口返回少了，所以感到很迷惑。将接口返回信息完整的打印出来发现，接口返回的数据没少。</p>
+<pre><code class="c">void requestWeather()
+&#123;
+    WiFiClient	client;
+    String		reqRes = &quot;/v3/weather/now.json?key=&quot; + reqUserKey +
+                 +&quot;&amp;location=&quot; + reqLocation +
+                 &quot;&amp;language=en&amp;unit=&quot; + reqUnit;
+    /* 建立http请求信息 */
+    String httpRequest = String( &quot;GET &quot; ) + reqRes + &quot; HTTP/1.1\r\n&quot; +
+                 &quot;Host: &quot; + host + &quot;\r\n&quot; +
+                 &quot;Connection: close\r\n\r\n&quot;;
+    Serial.println( &quot;&quot; );
+    Serial.print( &quot;Connecting to &quot; ); Serial.print( host );
+
+    /* 尝试连接服务器 */
+    if ( client.connect( host, 80 ) )
+    &#123;
+        Serial.println( &quot; Success!&quot; );
+
+        /* 向服务器发送http请求信息 */
+        client.print( httpRequest );
+        Serial.println( &quot;Sending request: &quot; );
+        Serial.println( httpRequest );
+
+        /* 获取并显示服务器响应状态行 */
+        String status_response = client.readStringUntil( &#39;\n&#39; );
+        Serial.print( &quot;status_response: &quot; );
+        Serial.println( status_response );
+
+        /* 打印出完整的接口返回信息 */
+        String responsePayload = wifiClient.readString();
+        Serial.println( &quot;Server Response Payload: &quot; );
+        Serial.println( responsePayload );
+
+        /* 使用find跳过HTTP响应头 */
+        if ( client.find( &quot;\r\n\r\n&quot; ) )
+        &#123;
+            Serial.println( &quot;Found Header End. Start Parsing.&quot; );
+        &#125;
+
+        /* 利用ArduinoJson库解析心知天气响应信息 */
+        parseInfo( client );
+    &#125; else &#123;
+        Serial.println( &quot; connection failed!&quot; );
+    &#125;
+    /* 断开客户端与服务器连接工作 */
+    client.stop();
+&#125;
+</code></pre>
+<p>就是下面这几行：</p>
+<pre><code class="c">/* 打印出完整的接口返回信息 */
+String responsePayload = wifiClient.readString();
+Serial.println( &quot;Server Response Payload: &quot; );
+Serial.println( responsePayload );
+</code></pre>
+<p>尝试将 ArduinoJson 的空间调大之后，解析出了全部字段：</p>
+<pre><code class="c">const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(1) + 2*JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(6) + 230;
+/* 将 capacity 改为 1024 */
+DynamicJsonDocument doc(capacity);
+deserializeJson(doc, client);
+</code></pre>
+<h3 id="ArduinoJson-Assistant"><a href="#ArduinoJson-Assistant" class="headerlink" title="ArduinoJson Assistant"></a>ArduinoJson Assistant</h3><p>今天晚上回来的打算好好了解一下 ArduinoJson，看到 太极创客 有专门提到这个库，Arduino 官网竟然还有一个专门根据 JSON 数据反向生成解析代码的页面：<a target="_blank" rel="noopener" href="https://arduinojson.org/v6/assistant/">ArduinoJson Assistant</a>，变量自动命名，很好用。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>代码地址：<a href="git@github.com:intfunc/weather-clock.git">weather-clock</a></p>
+<p>花了一星期的时间，完成了本该半年之前就要完成的事情，途中遇到了许多想象不到的问题，每天晚上八九点回来一直弄到一两点，有点睡眠不足，终于明天是周末，可以多睡一会儿。</p>
+<p>夜深人静，头脑更加清醒；</p>
+<p>指尖跳动，键盘清脆作响；</p>
+<p>用代码谱写最华美的乐章！</p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="utterances_thread">
+            <noscript>加载评论需要在浏览器启用 JavaScript 脚本支持。</noscript>
+        </div>
+    </div>
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/friends/">友链</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#VSCODE-ESP8266-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-number">1.</span> <span class="toc-text">VSCODE ESP8266 开发环境搭建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WiFi%E8%BF%9E%E6%8E%A5"><span class="toc-number">2.</span> <span class="toc-text">WiFi连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#oled-%E5%B1%8F%E5%B9%95%E8%BF%9E%E6%8E%A5"><span class="toc-number">3.</span> <span class="toc-text">oled 屏幕连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E5%B1%8F%E5%B9%95%E4%B8%8A%E8%BE%93%E5%87%BA"><span class="toc-number">4.</span> <span class="toc-text">在屏幕上输出</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%97%E4%BD%93%E5%8F%8A%E6%96%87%E5%AD%97%E5%A4%A7%E5%B0%8F%E7%9A%84%E6%8E%A7%E5%88%B6"><span class="toc-number">5.</span> <span class="toc-text">字体及文字大小的控制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E5%A4%A9%E6%B0%94-API-%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-number">6.</span> <span class="toc-text">关于天气 API 的选择</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%83%E7%9F%A5%E5%A4%A9%E6%B0%94"><span class="toc-number">6.1.</span> <span class="toc-text">心知天气</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C%E9%A3%8E%E5%A4%A9%E6%B0%94"><span class="toc-number">6.2.</span> <span class="toc-text">和风天气</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#API-%E6%8E%A5%E5%8F%A3%E7%9A%84%E7%AB%AF%E5%8F%A3%E4%BB%A5%E5%8F%8A-SSL"><span class="toc-number">7.</span> <span class="toc-text">API 接口的端口以及 SSL</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#80-%E7%AB%AF%E5%8F%A3%E5%92%8C-443-%E7%AB%AF%E5%8F%A3"><span class="toc-number">7.1.</span> <span class="toc-text">80 端口和 443 端口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C%E9%A3%8E%E5%A4%A9%E6%B0%94-API-%E5%9F%9F%E5%90%8D%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">7.2.</span> <span class="toc-text">和风天气 API 域名的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E5%8A%A0%E5%AF%86%E9%97%AE%E9%A2%98"><span class="toc-number">7.3.</span> <span class="toc-text">接口加密问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ArduinoJson%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">8.</span> <span class="toc-text">ArduinoJson的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ArduinoJson-Assistant"><span class="toc-number">8.1.</span> <span class="toc-text">ArduinoJson Assistant</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">9.</span> <span class="toc-text">总结</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2022/01/22/f591413767a4/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&text=基于ESP8266和心知天气的小电视"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&title=基于ESP8266和心知天气的小电视"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&is_video=false&description=基于ESP8266和心知天气的小电视"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=基于ESP8266和心知天气的小电视&body=Check out this article: https://lozhu.happy365.day/2022/01/22/f591413767a4/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&title=基于ESP8266和心知天气的小电视"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&title=基于ESP8266和心知天气的小电视"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&title=基于ESP8266和心知天气的小电视"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&title=基于ESP8266和心知天气的小电视"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2022/01/22/f591413767a4/&name=基于ESP8266和心知天气的小电视&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2022/01/22/f591413767a4/&t=基于ESP8266和心知天气的小电视"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    <!-- Copyright --> &copy;
+    
+    
+    2018-2024
+    lozhu
+  </div>
+  
+    <div>
+      <a href="https://icp.gov.moe/?keyword=20249900" target="_blank">萌ICP备 20249900 号</a>
+    </div>
+  
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?8bdf047ae0a66729bd3b27e8bb56fe11";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      </script>
+
+<!-- 51la Analytics -->
+
+  <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+  <script>
+  LA.init({
+      id: '3I0QIERSX42bDzDc',
+      ck: '3I0QIERSX42bDzDc'
+  })
+  </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+    <script type="text/javascript">
+      var utterances_repo = 'lozhu20/my-blog-comments';
+      var utterances_issue_term = 'pathname';
+      var utterances_label = 'Comment';
+      var utterances_theme = 'github-light';
+
+      (function(){
+          var script = document.createElement('script');
+
+          script.src = 'https://utteranc.es/client.js';
+          script.setAttribute('repo', utterances_repo);
+          script.setAttribute('issue-term', 'pathname');
+          script.setAttribute('label', utterances_label);
+          script.setAttribute('theme', utterances_theme);
+          script.setAttribute('crossorigin', 'anonymous');
+          script.async = true;
+          (document.getElementById('utterances_thread')).appendChild(script);
+      }());
+  </script>
+
+<!-- image modal -->
+<script>
+  (function() {
+    var contentNode = document.getElementsByClassName('content e-content');
+    if (!contentNode || contentNode.length === 0) {
+      console.log('no content, exit');
+      return;
+    }
+
+    var imgsNodes = contentNode[0].getElementsByTagName('img');
+    if (!imgsNodes || imgsNodes.length === 0) {
+      console.log('no image, exit');
+      return;
+    }
+
+    var span = document.getElementById('modal_close_btn');
+    span.onclick = function() { 
+      modal.style.display = "none";
+    };
+
+    var modal = document.getElementById('modal');
+    var modalImage = document.getElementById('modal_image');
+    var captionText = document.getElementById('caption');
+
+    for (var i = imgsNodes.length - 1; i >= 0; i--) {
+      let image = imgsNodes[i];
+      image.onclick = function() {
+        modal.style.display = "block";
+        modalImage.src = this.src;
+        captionText.innerHTML = this.alt || "文章配图";
+      };
+    }
+  }());
+</script>
+
+</body>
+</html>

@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="baidu-site-verification" content="codeva-OBV0UPgBod" />
+    <meta name="msvalidate.01" content="B9019CE3751A15D63E78AF8679980069" />
+    <meta name="description" content="学习视频推荐下面这个视频逻辑清晰，还带有操作实例，非常推荐！">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux中的LVM存储管理">
+<meta property="og:url" content="https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/index.html">
+<meta property="og:site_name" content="Lozhu&#39;s blog">
+<meta property="og:description" content="学习视频推荐下面这个视频逻辑清晰，还带有操作实例，非常推荐！">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.happy365.day/24/07/12021838_LVM-constructure.png">
+<meta property="og:image" content="https://images.happy365.day/24/07/12022126_Snipaste20240711235848.png">
+<meta property="og:image" content="https://images.happy365.day/24/07/12022231_Snipaste20240711235946.png">
+<meta property="article:published_time" content="2024-07-11T18:27:34.000Z">
+<meta property="article:modified_time" content="2024-12-08T06:50:57.171Z">
+<meta property="article:author" content="lozhu">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="LVM">
+<meta property="article:tag" content="文件系统">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.happy365.day/24/07/12021838_LVM-constructure.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Linux中的LVM存储管理</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XMGS491MQF"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XMGS491MQF');
+  </script>
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Lozhu's blog" type="application/atom+xml">
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="modal" class="modal">
+  <span id="modal_close_btn" class="modal-close-btn">x</span>
+  <img id="modal_image" class="modal-image">
+  <!-- <div id="caption"></div> -->
+</div>
+
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="目录"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="顶部" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="上一篇" href="/2024/07/12/d2ab6908393c/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="下一篇" href="/2024/06/19/d083b2636358/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="返回顶部" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&text=Linux中的LVM存储管理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&title=Linux中的LVM存储管理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&is_video=false&description=Linux中的LVM存储管理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=Linux中的LVM存储管理&body=Check out this article: https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&title=Linux中的LVM存储管理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&title=Linux中的LVM存储管理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&title=Linux中的LVM存储管理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&title=Linux中的LVM存储管理"><i class="fab fa-digg " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&name=Linux中的LVM存储管理&description=&lt;h2 id=&#34;学习视频推荐&#34;&gt;&lt;a href=&#34;#学习视频推荐&#34; class=&#34;headerlink&#34; title=&#34;学习视频推荐&#34;&gt;&lt;/a&gt;学习视频推荐&lt;/h2&gt;&lt;p&gt;下面这个视频逻辑清晰，还带有操作实例，非常推荐！&lt;/p&gt;
+&lt;iframe src=&#34;//player.bilibili.com/player.html?isOutside=true&amp;aid=855524671&amp;bvid=BV1rL4y1w7wS&amp;cid=762502859&amp;p=1&#34; scrolling=&#34;no&#34; border=&#34;0&#34; frameborder=&#34;no&#34; framespacing=&#34;0&#34; allowfullscreen=&#34;true&#34;&gt;&lt;/iframe&gt;"><i class="fab fa-tumblr " aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&t=Linux中的LVM存储管理"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E8%A7%86%E9%A2%91%E6%8E%A8%E8%8D%90"><span class="toc-number">1.</span> <span class="toc-text">学习视频推荐</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-LVM"><span class="toc-number">2.</span> <span class="toc-text">什么是 LVM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ubuntu-%E4%B8%AD%E7%9A%84-LVM"><span class="toc-number">3.</span> <span class="toc-text">Ubuntu 中的 LVM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B-LVM-%E4%BF%A1%E6%81%AF"><span class="toc-number">4.</span> <span class="toc-text">查看 LVM 信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A9%E5%AE%B9%E6%93%8D%E4%BD%9C"><span class="toc-number">5.</span> <span class="toc-text">扩容操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%B7%E7%BB%84%E5%92%8C%E9%80%BB%E8%BE%91%E5%8D%B7"><span class="toc-number">6.</span> <span class="toc-text">创建自己的卷组和逻辑卷</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%93%8D%E4%BD%9C"><span class="toc-number">7.</span> <span class="toc-text">删除操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">8.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Linux中的LVM存储管理
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">lozhu</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-07-11T18:27:34.000Z" class="dt-published" itemprop="datePublished">2024-07-12</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fa-solid fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a>
+    </div>
+
+
+      
+    <!-- <div class="article-tag"> -->
+    <div class="article-category">
+        <i class="fa-solid fa-tag"></i>
+        <!-- <a class="p-category" href="/tags/LVM/" rel="tag">LVM</a>, <a class="p-category" href="/tags/Linux/" rel="tag">Linux</a>, <a class="p-category" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a> -->
+        <a class="category-link" href="/tags/LVM/" rel="tag">LVM</a>, <a class="category-link" href="/tags/Linux/" rel="tag">Linux</a>, <a class="category-link" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag">文件系统</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h2 id="学习视频推荐"><a href="#学习视频推荐" class="headerlink" title="学习视频推荐"></a>学习视频推荐</h2><p>下面这个视频逻辑清晰，还带有操作实例，非常推荐！</p>
+<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=855524671&bvid=BV1rL4y1w7wS&cid=762502859&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>
+
+<span id="more"></span>
+
+
+
+<h2 id="什么是-LVM"><a href="#什么是-LVM" class="headerlink" title="什么是 LVM"></a>什么是 LVM</h2><p>LVM 是 Logical Volume Manager （逻辑卷管理）的缩写，是 Linux 系统中替代传统基于分区磁盘管理的一种磁盘管理方式。逻辑卷和分区的概念差不多。使用磁盘分区的方式不方便对磁盘容量进行调整，而 LVM 很好的解决了这个问题。</p>
+<p>LVM 包含 3 个概念：</p>
+<ul>
+<li>Physical Volume - 物理卷</li>
+<li>Volume Group - 卷组（相当于传统概念中的磁盘）</li>
+<li>Logical Volume - 逻辑卷（相当于传统概念中的分区）</li>
+</ul>
+<p>这 3 个概念的关系如下：</p>
+<p><img src="https://images.happy365.day/24/07/12021838_LVM-constructure.png" alt="结构"></p>
+<p>物理卷相当于存储空间的一个池子，一个物理卷下可以包含多个卷组，一个卷组下可以又有多个逻辑卷。要想对卷组扩容，卷组所属的物理卷必须要有足够的容量，逻辑卷同理。</p>
+<h2 id="Ubuntu-中的-LVM"><a href="#Ubuntu-中的-LVM" class="headerlink" title="Ubuntu 中的 LVM"></a>Ubuntu 中的 LVM</h2><p>在安装 ubuntu-20.04.6 桌面系统时记得勾选使用 LVM 的选项。这里遇到个问题，使用 LVM 这个选项只在默认分区下存在，自定义分区时无法指定。</p>
+<p><img src="https://images.happy365.day/24/07/12022126_Snipaste20240711235848.png" alt="LVM选项"></p>
+<p>这是本文中使用的安装系统默认分区方案：</p>
+<p><img src="https://images.happy365.day/24/07/12022231_Snipaste20240711235946.png" alt="Snipaste_2024-07-11_23-59-46"></p>
+<p>可以看到安装系统会默认创建 vgubuntu 这个卷组，然后在这个卷组下创建 root 和 swap_1 两个逻辑卷。</p>
+<h2 id="查看-LVM-信息"><a href="#查看-LVM-信息" class="headerlink" title="查看 LVM 信息"></a>查看 LVM 信息</h2><p>使用 <code>pvdisplay</code> 查看物理卷信息：</p>
+<pre><code>root@kitazono-vm:/home/kitazono# pvdisplay
+  --- Physical volume ---
+  PV Name               /dev/sda5
+  # 卷组名称
+  VG Name               vgubuntu
+  # 物理卷的容量
+  PV Size               &lt;19.50 GiB / not usable 0
+  Allocatable           yes
+  PE Size               4.00 MiB
+  Total PE              4991
+  Free PE               9
+  Allocated PE          4982
+  PV UUID               SopW29-0S5M-Oe33-ROb5-aBh7-aZXI-RECLAP
+</code></pre>
+<p>PV Size 为物理卷容量，约等于 PE Size x Total PE &#x2F; 1024。</p>
+<p>使用 <code>vgddisplay</code> 查看卷组信息：</p>
+<pre><code>root@kitazono-vm:/home/kitazono# vgdisplay
+  --- Volume group ---
+  VG Name               vgubuntu
+  System ID
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  3
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                2
+  Open LV               2
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               &lt;19.50 GiB
+  PE Size               4.00 MiB
+  Total PE              4991
+  Alloc PE / Size       4982 / 19.46 GiB
+  Free  PE / Size       9 / 36.00 MiB
+  VG UUID               qJWlI2-TS2u-fWHT-DSXz-b60b-6Ka1-mA1XfN
+</code></pre>
+<p>本系统中包含一个卷组，就是安装系统时安装程序创建的默认卷组 vgubuntu，VG Size 约等于 20G。</p>
+<p>使用 <code>lvdisplay</code> 查看逻辑卷：</p>
+<pre><code>root@kitazono-vm:/home/kitazono# lvdisplay
+  --- Logical volume ---
+  LV Path                /dev/vgubuntu/root
+  LV Name                root
+  VG Name                vgubuntu
+  LV UUID                dCd3rn-q4yn-QHY1-RWfI-dFkt-XzE6-bIthjK
+  LV Write Access        read/write
+  LV Creation host, time ubuntu, 2024-07-11 23:59:14 +0800
+  LV Status              available
+  # open                 1
+  LV Size                &lt;18.51 GiB
+  Current LE             4738
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:0
+
+  --- Logical volume ---
+  LV Path                /dev/vgubuntu/swap_1
+  LV Name                swap_1
+  VG Name                vgubuntu
+  LV UUID                Ru88TV-pasS-4TWp-DjGM-klC7-csnm-A3Pagb
+  LV Write Access        read/write
+  LV Creation host, time ubuntu, 2024-07-11 23:59:14 +0800
+  LV Status              available
+  # open                 2
+  LV Size                976.00 MiB
+  Current LE             244
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:1
+</code></pre>
+<p>本系统包含 &#x2F;dev&#x2F;vgubuntu&#x2F;root 和 &#x2F;dev&#x2F;vgubuntu&#x2F;swap_1 两个逻辑卷，还可以看到两个逻辑卷的容量、所属卷组等信息。</p>
+<p>使用 <code>lsblk</code> 查看磁盘结构：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# lsblk
+NAME                MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+loop0                 7:0    0     4K  1 loop /snap/bare/5
+loop1                 7:1    0  63.3M  1 loop /snap/core20/1828
+loop2                 7:2    0 346.3M  1 loop /snap/gnome-3-38-2004/119
+loop3                 7:3    0  91.7M  1 loop /snap/gtk-common-themes/1535
+loop4                 7:4    0    46M  1 loop /snap/snap-store/638
+loop5                 7:5    0  49.9M  1 loop /snap/snapd/18357
+sda                   8:0    0    20G  0 disk
+├─sda1                8:1    0   512M  0 part /boot/efi
+├─sda2                8:2    0     1K  0 part
+└─sda5                8:5    0  19.5G  0 part
+  ├─vgubuntu-root   253:0    0  18.5G  0 lvm  /
+  └─vgubuntu-swap_1 253:1    0   976M  0 lvm  [SWAP]
+sr0                  11:0    1  1024M  0 rom
+</code></pre>
+<p>其中 sda 对应磁盘，sda5 对应物理卷PV，vgubuntu 对应卷组，vgubuntu-root 和 vgubuntu-swap_1 对应该卷组下的两个逻辑卷。</p>
+<h2 id="扩容操作"><a href="#扩容操作" class="headerlink" title="扩容操作"></a>扩容操作</h2><p>新增一块 10G 的硬盘，然后重新启动虚拟机。使用 <code>lsblk</code> 查看磁盘：</p>
+<pre><code class="sh">kitazono@kitazono-vm:~$ lsblk
+NAME                MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+loop0                 7:0    0  63.3M  1 loop /snap/core20/1828
+loop1                 7:1    0 346.3M  1 loop /snap/gnome-3-38-2004/119
+loop2                 7:2    0     4K  1 loop /snap/bare/5
+loop3                 7:3    0  91.7M  1 loop /snap/gtk-common-themes/1535
+loop4                 7:4    0    46M  1 loop /snap/snap-store/638
+loop5                 7:5    0  49.9M  1 loop /snap/snapd/18357
+sda                   8:0    0    20G  0 disk
+├─sda1                8:1    0   512M  0 part /boot/efi
+├─sda2                8:2    0     1K  0 part
+└─sda5                8:5    0  19.5G  0 part
+  ├─vgubuntu-root   253:0    0  18.5G  0 lvm  /
+  └─vgubuntu-swap_1 253:1    0   976M  0 lvm  [SWAP]
+# 新增的磁盘
+sdb                   8:16   0    10G  0 disk
+sr0                  11:0    1   4.1G  0 rom  /media/kitazono/Ubuntu 20.04.6 LTS amd64
+</code></pre>
+<p>10G 的新硬盘 sdb 已经识别到了。</p>
+<p>使用 <code>pvcreate</code> 创建物理卷：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# pvcreate /dev/sdb
+  Physical volume &quot;/dev/sdb&quot; successfully created.
+</code></pre>
+<p>查看物理卷：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# pvdisplay
+  --- Physical volume ---
+  PV Name               /dev/sda5
+  VG Name               vgubuntu
+  PV Size               &lt;19.50 GiB / not usable 0
+  Allocatable           yes
+  PE Size               4.00 MiB
+  Total PE              4991
+  Free PE               9
+  Allocated PE          4982
+  PV UUID               SopW29-0S5M-Oe33-ROb5-aBh7-aZXI-RECLAP
+
+  &quot;/dev/sdb&quot; is a new physical volume of &quot;10.00 GiB&quot;
+  --- NEW Physical volume ---
+  PV Name               /dev/sdb
+  VG Name
+  PV Size               10.00 GiB
+  Allocatable           NO
+  PE Size               0
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               a8qLmc-naFa-LVXu-zABA-kOfU-Wp9j-AV0L4r
+</code></pre>
+<p>&#x2F;dev&#x2F;sdb 就是刚才创建的物理卷。</p>
+<p>然后使用 <code>vgextend</code> 给 vgubuntu 卷组增加容量：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# vgextend vgubuntu /dev/sdb
+  Volume group &quot;vgubuntu&quot; successfully extended
+</code></pre>
+<p>查看卷组详情：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# vgdisplay
+  --- Volume group ---
+  VG Name               vgubuntu
+  System ID
+  Format                lvm2
+  Metadata Areas        2
+  Metadata Sequence No  4
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                2
+  Open LV               2
+  Max PV                0
+  Cur PV                2
+  Act PV                2
+  VG Size               29.49 GiB
+  PE Size               4.00 MiB
+  Total PE              7550
+  Alloc PE / Size       4982 / 19.46 GiB
+  Free  PE / Size       2568 / 10.03 GiB
+  VG UUID               qJWlI2-TS2u-fWHT-DSXz-b60b-6Ka1-mA1XfN
+</code></pre>
+<p>VG size  已经从 20G 增加到了约 30G，Free PE &#x2F; Size 容量就是新增的磁盘容量。卷组扩容成功之后就可以给逻辑卷扩容了。</p>
+<p>先查看一下 root 卷的容量：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# lsblk
+NAME                MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+loop0                 7:0    0  63.3M  1 loop /snap/core20/1828
+loop1                 7:1    0 346.3M  1 loop /snap/gnome-3-38-2004/119
+loop2                 7:2    0     4K  1 loop /snap/bare/5
+loop3                 7:3    0  91.7M  1 loop /snap/gtk-common-themes/1535
+loop4                 7:4    0    46M  1 loop /snap/snap-store/638
+loop5                 7:5    0  49.9M  1 loop /snap/snapd/18357
+sda                   8:0    0    20G  0 disk
+├─sda1                8:1    0   512M  0 part /boot/efi
+├─sda2                8:2    0     1K  0 part
+└─sda5                8:5    0  19.5G  0 part
+  ├─vgubuntu-root   253:0    0  18.5G  0 lvm  /
+  └─vgubuntu-swap_1 253:1    0   976M  0 lvm  [SWAP]
+sdb                   8:16   0    10G  0 disk
+sr0                  11:0    1   4.1G  0 rom  /media/kitazono/Ubuntu 20.04.6 LTS amd64
+</code></pre>
+<p>vgubuntu-root 此时容量为 18.5G，下面对 vgubuntu-root 扩容 5G。</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# lvextend -L +5g /dev/vgubuntu/root
+  Size of logical volume vgubuntu/root changed from &lt;18.51 GiB (4738 extents) to &lt;23.51 GiB (6018 extents).
+  Logical volume vgubuntu/root successfully resized.
+</code></pre>
+<p>再次查看磁盘容量情况：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# lsblk
+NAME                MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+loop0                 7:0    0  63.3M  1 loop /snap/core20/1828
+loop1                 7:1    0 346.3M  1 loop /snap/gnome-3-38-2004/119
+loop2                 7:2    0     4K  1 loop /snap/bare/5
+loop3                 7:3    0  91.7M  1 loop /snap/gtk-common-themes/1535
+loop4                 7:4    0    46M  1 loop /snap/snap-store/638
+loop5                 7:5    0  49.9M  1 loop /snap/snapd/18357
+sda                   8:0    0    20G  0 disk
+├─sda1                8:1    0   512M  0 part /boot/efi
+├─sda2                8:2    0     1K  0 part
+└─sda5                8:5    0  19.5G  0 part
+  ├─vgubuntu-root   253:0    0  23.5G  0 lvm  /
+  └─vgubuntu-swap_1 253:1    0   976M  0 lvm  [SWAP]
+sdb                   8:16   0    10G  0 disk
+└─vgubuntu-root     253:0    0  23.5G  0 lvm  /
+sr0                  11:0    1   4.1G  0 rom  /media/kitazono/Ubuntu 20.04.6 LTS amd64
+</code></pre>
+<p>此时 vgubuntu-root 容量增加到了 23.5 G。</p>
+<p>此时如果使用 <code>df -h</code> 查看磁盘容量，会发现 root 分区的容量没有变化，调整逻辑卷的大小之后还要调整文件系统的大小？</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# df -h
+Filesystem                 Size  Used Avail Use% Mounted on
+udev                       1.9G     0  1.9G   0% /dev
+tmpfs                      388M  1.9M  386M   1% /run
+# 此时还是 19G
+/dev/mapper/vgubuntu-root   19G  6.6G   11G  39% /
+tmpfs                      1.9G     0  1.9G   0% /dev/shm
+tmpfs                      5.0M  4.0K  5.0M   1% /run/lock
+tmpfs                      1.9G     0  1.9G   0% /sys/fs/cgroup
+/dev/loop0                  64M   64M     0 100% /snap/core20/1828
+/dev/loop1                 347M  347M     0 100% /snap/gnome-3-38-2004/119
+/dev/loop2                 128K  128K     0 100% /snap/bare/5
+/dev/loop3                  92M   92M     0 100% /snap/gtk-common-themes/1535
+/dev/loop5                  50M   50M     0 100% /snap/snapd/18357
+/dev/loop4                  46M   46M     0 100% /snap/snap-store/638
+/dev/sda1                  511M  4.0K  511M   1% /boot/efi
+tmpfs                      388M   20K  388M   1% /run/user/1000
+/dev/sr0                   4.1G  4.1G     0 100% /media/kitazono/Ubuntu 20.04.6 LTS amd64
+</code></pre>
+<p>使用 resize2fs 调整文件系统的大小，如果是 xfs 格式的话使用 xfs_grows。</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# resize2fs /dev/vgubuntu/root
+resize2fs 1.45.5 (07-Jan-2020)
+Filesystem at /dev/vgubuntu/root is mounted on /; on-line resizing required
+old_desc_blocks = 3, new_desc_blocks = 3
+The filesystem on /dev/vgubuntu/root is now 6162432 (4k) blocks long.
+</code></pre>
+<p>此时再查看磁盘容量：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# df -h
+Filesystem                 Size  Used Avail Use% Mounted on
+udev                       1.9G     0  1.9G   0% /dev
+tmpfs                      388M  1.9M  386M   1% /run
+# 容量已经调整为 23 G
+/dev/mapper/vgubuntu-root   23G  6.6G   16G  30% /
+tmpfs                      1.9G     0  1.9G   0% /dev/shm
+tmpfs                      5.0M  4.0K  5.0M   1% /run/lock
+tmpfs                      1.9G     0  1.9G   0% /sys/fs/cgroup
+/dev/loop0                  64M   64M     0 100% /snap/core20/1828
+/dev/loop1                 347M  347M     0 100% /snap/gnome-3-38-2004/119
+/dev/loop2                 128K  128K     0 100% /snap/bare/5
+/dev/loop3                  92M   92M     0 100% /snap/gtk-common-themes/1535
+/dev/loop5                  50M   50M     0 100% /snap/snapd/18357
+/dev/loop4                  46M   46M     0 100% /snap/snap-store/638
+/dev/sda1                  511M  4.0K  511M   1% /boot/efi
+tmpfs                      388M   20K  388M   1% /run/user/1000
+/dev/sr0                   4.1G  4.1G     0 100% /media/kitazono/Ubuntu 20.04.6 LTS amd64
+</code></pre>
+<p>可以看到 root 分区的容量已经调整为 23G。</p>
+<h2 id="创建自己的卷组和逻辑卷"><a href="#创建自己的卷组和逻辑卷" class="headerlink" title="创建自己的卷组和逻辑卷"></a>创建自己的卷组和逻辑卷</h2><p>新增一块 5G 的硬盘然后重启虚拟机，然后查看磁盘详情：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# lsblk
+NAME                MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+loop0                 7:0    0     4K  1 loop /snap/bare/5
+loop1                 7:1    0  63.3M  1 loop /snap/core20/1828
+loop2                 7:2    0 346.3M  1 loop /snap/gnome-3-38-2004/119
+loop3                 7:3    0  91.7M  1 loop /snap/gtk-common-themes/1535
+loop4                 7:4    0    46M  1 loop /snap/snap-store/638
+loop5                 7:5    0  49.9M  1 loop /snap/snapd/18357
+sda                   8:0    0    20G  0 disk
+├─sda1                8:1    0   512M  0 part /boot/efi
+├─sda2                8:2    0     1K  0 part
+└─sda5                8:5    0  19.5G  0 part
+  ├─vgubuntu-root   253:0    0  23.5G  0 lvm  /
+  └─vgubuntu-swap_1 253:1    0   976M  0 lvm  [SWAP]
+sdb                   8:16   0    10G  0 disk
+└─vgubuntu-root     253:0    0  23.5G  0 lvm  /
+# 新增的 5G 硬盘
+sdc                   8:32   0     5G  0 disk
+sr0                  11:0    1   4.1G  0 rom  /media/kitazono/Ubuntu 20.04.6 LTS amd64
+</code></pre>
+<p>然后创建物理卷：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# pvcreate /dev/sdc
+  Device vgkitazono not found.
+  Physical volume &quot;/dev/sdc&quot; successfully created.
+</code></pre>
+<p>查看物理卷信息：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# pvdisplay
+  --- Physical volume ---
+  PV Name               /dev/sda5
+  VG Name               vgubuntu
+  PV Size               &lt;19.50 GiB / not usable 0
+  Allocatable           yes (but full)
+  PE Size               4.00 MiB
+  Total PE              4991
+  Free PE               0
+  Allocated PE          4991
+  PV UUID               SopW29-0S5M-Oe33-ROb5-aBh7-aZXI-RECLAP
+
+  --- Physical volume ---
+  PV Name               /dev/sdb
+  VG Name               vgubuntu
+  PV Size               10.00 GiB / not usable 4.00 MiB
+  Allocatable           yes
+  PE Size               4.00 MiB
+  Total PE              2559
+  Free PE               1288
+  Allocated PE          1271
+  PV UUID               a8qLmc-naFa-LVXu-zABA-kOfU-Wp9j-AV0L4r
+
+  &quot;/dev/sdc&quot; is a new physical volume of &quot;5.00 GiB&quot;
+  --- NEW Physical volume ---
+  PV Name               /dev/sdc
+  VG Name
+  PV Size               5.00 GiB
+  Allocatable           NO
+  PE Size               0
+  Total PE              0
+  Free PE               0
+  Allocated PE          0
+  PV UUID               eSW0dn-QU6U-V8vj-KcG1-S6IF-bVBb-M34S4O
+</code></pre>
+<p>第三部分就是刚才创建成功的物理卷。然后再创建新的卷组：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# vgcreate vgkitazono /dev/sdc
+  Volume group &quot;vgkitazono&quot; successfully created
+</code></pre>
+<p>查看卷组信息：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# vgdisplay
+  --- Volume group ---
+  VG Name               vgkitazono
+  System ID
+  Format                lvm2
+  Metadata Areas        1
+  Metadata Sequence No  1
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                0
+  Open LV               0
+  Max PV                0
+  Cur PV                1
+  Act PV                1
+  VG Size               &lt;5.00 GiB
+  PE Size               4.00 MiB
+  Total PE              1279
+  Alloc PE / Size       0 / 0
+  Free  PE / Size       1279 / &lt;5.00 GiB
+  VG UUID               JP7PLR-a3Iy-w4ox-zDDO-3eiR-MoPG-zoznfl
+
+  --- Volume group ---
+  VG Name               vgubuntu
+  System ID
+  Format                lvm2
+  Metadata Areas        2
+  Metadata Sequence No  5
+  VG Access             read/write
+  VG Status             resizable
+  MAX LV                0
+  Cur LV                2
+  Open LV               2
+  Max PV                0
+  Cur PV                2
+  Act PV                2
+  VG Size               29.49 GiB
+  PE Size               4.00 MiB
+  Total PE              7550
+  Alloc PE / Size       6262 / 24.46 GiB
+  Free  PE / Size       1288 / 5.03 GiB
+  VG UUID               qJWlI2-TS2u-fWHT-DSXz-b60b-6Ka1-mA1XfN
+</code></pre>
+<p>可以看到 vgkitazono 已经创建成功，容量约为 5G。接下来创建一个 2G 的逻辑卷：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# lvcreate -L 2g -n kitazono vgkitazono
+  Logical volume &quot;kitazono&quot; created.
+</code></pre>
+<p>-L 参数指定容量大小，-n 指定逻辑卷名称，最后一个参数是卷组名。</p>
+<p>查看此时的逻辑卷信息：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# lvdisplay
+  --- Logical volume ---
+  LV Path                /dev/vgkitazono/kitazono
+  LV Name                kitazono
+  VG Name                vgkitazono
+  LV UUID                UviiLK-ywm0-jTxP-ZtoR-IbDB-M7f3-DCIoah
+  LV Write Access        read/write
+  LV Creation host, time kitazono-vm, 2024-07-12 01:56:52 +0800
+  LV Status              available
+  # open                 0
+  LV Size                2.00 GiB
+  Current LE             512
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:2
+
+  --- Logical volume ---
+  LV Path                /dev/vgubuntu/root
+  LV Name                root
+  VG Name                vgubuntu
+  LV UUID                dCd3rn-q4yn-QHY1-RWfI-dFkt-XzE6-bIthjK
+  LV Write Access        read/write
+  LV Creation host, time ubuntu, 2024-07-11 23:59:14 +0800
+  LV Status              available
+  # open                 1
+  LV Size                &lt;23.51 GiB
+  Current LE             6018
+  Segments               3
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:0
+
+  --- Logical volume ---
+  LV Path                /dev/vgubuntu/swap_1
+  LV Name                swap_1
+  VG Name                vgubuntu
+  LV UUID                Ru88TV-pasS-4TWp-DjGM-klC7-csnm-A3Pagb
+  LV Write Access        read/write
+  LV Creation host, time ubuntu, 2024-07-11 23:59:14 +0800
+  LV Status              available
+  # open                 2
+  LV Size                976.00 MiB
+  Current LE             244
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:1
+</code></pre>
+<p>可以看到逻辑卷 &#x2F;dev&#x2F;vgkitazono&#x2F;kitazono 已经创建成功，容量为 2G。</p>
+<p>逻辑卷创建成功之后还需要使用 <code>mkfs.ex4</code> 进行格式化：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# mkfs.ext4 /dev/vgkitazono/kitazono
+mke2fs 1.45.5 (07-Jan-2020)
+Creating filesystem with 524288 4k blocks and 131072 inodes
+Filesystem UUID: 0f25921a-4f2f-4f37-b014-b89fb79f7aeb
+Superblock backups stored on blocks:
+    32768, 98304, 163840, 229376, 294912
+
+Allocating group tables: done
+Writing inode tables: done
+Creating journal (16384 blocks): done
+Writing superblocks and filesystem accounting information: done
+</code></pre>
+<p>格式化成功。</p>
+<p>创建挂载点：</p>
+<pre><code class="sh">mkdir /mnt/kitazono
+</code></pre>
+<p>将刚才创建的逻辑卷挂载到挂载点：</p>
+<pre><code class="sh">mount /dev/vgkitazono/kitazono /mnt/kitazono
+</code></pre>
+<p>挂载完成后再查看磁盘容量信息：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# df -h
+Filesystem                       Size  Used Avail Use% Mounted on
+udev                             1.9G     0  1.9G   0% /dev
+tmpfs                            388M  1.9M  386M   1% /run
+/dev/mapper/vgubuntu-root         23G  6.6G   16G  30% /
+tmpfs                            1.9G     0  1.9G   0% /dev/shm
+tmpfs                            5.0M  4.0K  5.0M   1% /run/lock
+tmpfs                            1.9G     0  1.9G   0% /sys/fs/cgroup
+/dev/loop0                       128K  128K     0 100% /snap/bare/5
+/dev/loop1                        64M   64M     0 100% /snap/core20/1828
+/dev/loop2                       347M  347M     0 100% /snap/gnome-3-38-2004/119
+/dev/loop3                        92M   92M     0 100% /snap/gtk-common-themes/1535
+/dev/loop4                        46M   46M     0 100% /snap/snap-store/638
+/dev/loop5                        50M   50M     0 100% /snap/snapd/18357
+/dev/sda1                        511M  4.0K  511M   1% /boot/efi
+tmpfs                            388M   20K  388M   1% /run/user/1000
+/dev/sr0                         4.1G  4.1G     0 100% /media/kitazono/Ubuntu 20.04.6 LTS amd64
+# 刚才挂载的逻辑卷
+/dev/mapper/vgkitazono-kitazono  2.0G   24K  1.8G   1% /mnt/kitazono
+</code></pre>
+<p>2G 容量的逻辑卷就可以正常使用了。</p>
+<h2 id="删除操作"><a href="#删除操作" class="headerlink" title="删除操作"></a>删除操作</h2><p>删除命令：</p>
+<ul>
+<li>lvremove</li>
+<li>vgremove</li>
+<li>pvremove</li>
+</ul>
+<p>卸载逻辑卷：</p>
+<pre><code class="sh">umount /mnt/kitazono/
+</code></pre>
+<p>删除逻辑卷：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# lvremove /dev/vgkitazono/kitazono
+Do you really want to remove and DISCARD active logical volume vgkitazono/kitazono? [y/n]: y
+  Logical volume &quot;kitazono&quot; successfully removed
+</code></pre>
+<p>删除卷组：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# vgremove vgkitazono
+  Volume group &quot;vgkitazono&quot; successfully removed
+</code></pre>
+<p>删除物理卷：</p>
+<pre><code class="sh">root@kitazono-vm:/home/kitazono# pvremove /dev/sdc
+  Labels on physical volume &quot;/dev/sdc&quot; successfully wiped.
+</code></pre>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://linuxhandbook.com/lvm-guide/">The Complete Beginner’s Guide to LVM in Linux</a></p>
+<p><a target="_blank" rel="noopener" href="https://cn.linux-console.net/?p=19893">Linux 中 LVM 的完整初学者指南 [带实践]</a></p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="utterances_thread">
+            <noscript>加载评论需要在浏览器启用 JavaScript 脚本支持。</noscript>
+        </div>
+    </div>
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">首页</a></li>
+        
+          <li><a href="/archives/">归档</a></li>
+        
+          <li><a href="/friends/">友链</a></li>
+        
+          <li><a href="/about/">关于</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E8%A7%86%E9%A2%91%E6%8E%A8%E8%8D%90"><span class="toc-number">1.</span> <span class="toc-text">学习视频推荐</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-LVM"><span class="toc-number">2.</span> <span class="toc-text">什么是 LVM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ubuntu-%E4%B8%AD%E7%9A%84-LVM"><span class="toc-number">3.</span> <span class="toc-text">Ubuntu 中的 LVM</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B-LVM-%E4%BF%A1%E6%81%AF"><span class="toc-number">4.</span> <span class="toc-text">查看 LVM 信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A9%E5%AE%B9%E6%93%8D%E4%BD%9C"><span class="toc-number">5.</span> <span class="toc-text">扩容操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%B7%E7%BB%84%E5%92%8C%E9%80%BB%E8%BE%91%E5%8D%B7"><span class="toc-number">6.</span> <span class="toc-text">创建自己的卷组和逻辑卷</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%93%8D%E4%BD%9C"><span class="toc-number">7.</span> <span class="toc-text">删除操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-number">8.</span> <span class="toc-text">参考</span></a></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&text=Linux中的LVM存储管理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&title=Linux中的LVM存储管理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&is_video=false&description=Linux中的LVM存储管理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li> -->
+  <li><a class="icon" href="mailto:?subject=Linux中的LVM存储管理&body=Check out this article: https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&title=Linux中的LVM存储管理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&title=Linux中的LVM存储管理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&title=Linux中的LVM存储管理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&title=Linux中的LVM存储管理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&name=Linux中的LVM存储管理&description=&lt;h2 id=&#34;学习视频推荐&#34;&gt;&lt;a href=&#34;#学习视频推荐&#34; class=&#34;headerlink&#34; title=&#34;学习视频推荐&#34;&gt;&lt;/a&gt;学习视频推荐&lt;/h2&gt;&lt;p&gt;下面这个视频逻辑清晰，还带有操作实例，非常推荐！&lt;/p&gt;
+&lt;iframe src=&#34;//player.bilibili.com/player.html?isOutside=true&amp;aid=855524671&amp;bvid=BV1rL4y1w7wS&amp;cid=762502859&amp;p=1&#34; scrolling=&#34;no&#34; border=&#34;0&#34; frameborder=&#34;no&#34; framespacing=&#34;0&#34; allowfullscreen=&#34;true&#34;&gt;&lt;/iframe&gt;"><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li> -->
+  <!-- <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lozhu.happy365.day/2024/07/12/1bf0cfdf8615/&t=Linux中的LVM存储管理"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li> -->
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    <!-- Copyright --> &copy;
+    
+    
+    2018-2024
+    lozhu
+  </div>
+  
+    <div>
+      <a href="https://icp.gov.moe/?keyword=20249900" target="_blank">萌ICP备 20249900 号</a>
+    </div>
+  
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">首页</a></li><!--
+     --><!--
+       --><li><a href="/archives/">归档</a></li><!--
+     --><!--
+       --><li><a href="/friends/">友链</a></li><!--
+     --><!--
+       --><li><a href="/about/">关于</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="https://www.travellings.cn/go.html">开往 🚇</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板！\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "复制成功！");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+  <script type="text/javascript">
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?8bdf047ae0a66729bd3b27e8bb56fe11";
+          var s = document.getElementsByTagName("script")[0];
+          s.parentNode.insertBefore(hm, s);
+        })();
+      </script>
+
+<!-- 51la Analytics -->
+
+  <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+  <script>
+  LA.init({
+      id: '3I0QIERSX42bDzDc',
+      ck: '3I0QIERSX42bDzDc'
+  })
+  </script>
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+    <script type="text/javascript">
+      var utterances_repo = 'lozhu20/my-blog-comments';
+      var utterances_issue_term = 'pathname';
+      var utterances_label = 'Comment';
+      var utterances_theme = 'github-light';
+
+      (function(){
+          var script = document.createElement('script');
+
+          script.src = 'https://utteranc.es/client.js';
+          script.setAttribute('repo', utterances_repo);
+          script.setAttribute('issue-term', 'pathname');
+          script.setAttribute('label', utterances_label);
+          script.setAttribute('theme', utterances_theme);
+          script.setAttribute('crossorigin', 'anonymous');
+          script.async = true;
+          (document.getElementById('utterances_thread')).appendChild(script);
+      }());
+  </script>
+
+<!-- image modal -->
+<script>
+  (function() {
+    var contentNode = document.getElementsByClassName('content e-content');
+    if (!contentNode || contentNode.length === 0) {
+      console.log('no content, exit');
+      return;
+    }
+
+    var imgsNodes = contentNode[0].getElementsByTagName('img');
+    if (!imgsNodes || imgsNodes.length === 0) {
+      console.log('no image, exit');
+      return;
+    }
+
+    var span = document.getElementById('modal_close_btn');
+    span.onclick = function() { 
+      modal.style.display = "none";
+    };
+
+    var modal = document.getElementById('modal');
+    var modalImage = document.getElementById('modal_image');
+    var captionText = document.getElementById('caption');
+
+    for (var i = imgsNodes.length - 1; i >= 0; i--) {
+      let image = imgsNodes[i];
+      image.onclick = function() {
+        modal.style.display = "block";
+        modalImage.src = this.src;
+        captionText.innerHTML = this.alt || "文章配图";
+      };
+    }
+  }());
+</script>
+
+</body>
+</html>
